@@ -10,7 +10,6 @@ import (
 	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 const (
@@ -23,11 +22,6 @@ const (
 func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
 	fmt.Println("Using modern Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
-
-	destination, err := filepath.Abs(dest)
-	if err != nil {
-		return err
-	}
 
 	// Check whether we need to install the server
 	if _, err := os.Stat("forge-" + version + ".jar"); err == nil && target == mcinstall.Server {
@@ -54,9 +48,9 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 		}
 		defer os.Remove(toolFile.Name())
 
-		args = append(args, "-cp", toolFile.Name() + ";" + installerJar.Name(), "me.jamiemansfield.forgeclientinstaller.ClientInstaller", destination)
+		args = append(args, "-cp", toolFile.Name() + ";" + installerJar.Name(), "me.jamiemansfield.forgeclientinstaller.ClientInstaller", dest)
 	} else {
-		args = append(args, "-jar", installerJar.Name(), "--installServer", destination)
+		args = append(args, "-jar", installerJar.Name(), "--installServer", dest)
 	}
 
 	// Run installer

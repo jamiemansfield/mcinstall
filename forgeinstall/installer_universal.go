@@ -5,10 +5,12 @@
 package forgeinstall
 
 import (
-	"errors"
+	"archive/zip"
+	"encoding/json"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -18,11 +20,6 @@ import (
 func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
 	fmt.Println("Using universal Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
-
-	destination, err := filepath.Abs(dest)
-	if err != nil {
-		return err
-	}
 
 	// Check whether we need to install the server
 	if _, err := os.Stat("forge-" + version + "-universal.jar"); err == nil && target == mcinstall.Server {
@@ -40,10 +37,72 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 	}
 	defer os.Remove(installerJar.Name())
 
-	if target == mcinstall.Client {
-		// todo: implement support
-		return errors.New("client support not yet implemented")
-	} else {
-		return util.RunCommand("java", "-jar", installerJar.Name(), "--installServer", destination)
+	installerInfo, err := installerJar.Stat()
+	if err != nil {
+		return err
 	}
+
+	if target == mcinstall.Client {
+		versionName := mcVersion.String() + "-forge" + version
+
+		// Open installer jar, so we can pull files
+		reader, err := zip.NewReader(installerJar, installerInfo.Size())
+		if err != nil {
+			return err
+		}
+
+		// Create directories for install
+		versionDir := filepath.Join(dest, "versions", versionName)
+		if err := os.MkdirAll(versionDir, os.ModePerm); err != nil {
+			return err
+		}
+		libraryDir := filepath.Join(dest, "libraries", "net", "minecraftforge", "forge", version)
+		if err := os.MkdirAll(libraryDir, os.ModePerm); err != nil {
+			return err
+		}
+
+		// Save version info to disk
+		installProfile, err := util.GetFileInZip(reader, "install_profile.json")
+		if err != nil {
+			return err
+		}
+		profileReader, err := installProfile.Open()
+		if err != nil {
+			return err
+		}
+		defer profileReader.Close()
+		versionInfo, err := getVersionInfo(profileReader)
+		if err != nil {
+			return err
+		}
+		infoFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
+		if err != nil {
+			return err
+		}
+		defer infoFile.Close()
+		encoder := json.NewEncoder(infoFile)
+		encoder.SetIndent("", "\t")
+		err = encoder.Encode(versionInfo)
+		if err != nil {
+			return err
+		}
+
+		// Save Forge universal jar to disk
+		universalJar, err := util.GetFileInZip(reader, "forge-" + version + "-universal.jar")
+		if err != nil {
+			return err
+		}
+		return util.CopyZipFileToDisk(universalJar, filepath.Join(libraryDir, "forge-" + version + ".jar"))
+	} else {
+		return util.RunCommand("java", "-jar", installerJar.Name(), "--installServer", dest)
+	}
+}
+
+// Extracts the version information from Forge's install profile.
+func getVersionInfo(r io.Reader) (map[string]interface{}, error) {
+	var profile map[string]interface{}
+	if err := json.NewDecoder(r).Decode(&profile); err != nil {
+		return nil, err
+	}
+	return profile["versionInfo"].(map[string]interface{}), nil
 }

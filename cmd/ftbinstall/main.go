@@ -41,7 +41,7 @@ func main() {
 			}
 
 			fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
-			return ftbinstall.InstallPackVersion(mcinstall.Client, "", version)
+			return ftbinstall.InstallPackVersion(mcinstall.Client, "", pack, version)
 		},
 	}
 

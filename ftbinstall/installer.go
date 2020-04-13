@@ -7,18 +7,58 @@ package ftbinstall
 import (
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"path/filepath"
 )
 
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
-func InstallPackVersion(target mcinstall.InstallTarget, dest string, version *ftbmeta.Version) error {
-	err := InstallTargets(target, dest, version.Targets)
+func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack *ftbmeta.Pack, version *ftbmeta.Version) error {
+	destination, err := filepath.Abs(dest)
 	if err != nil {
 		return err
 	}
-	err = InstallFiles(target, dest, version.Files)
+
+	err = InstallTargets(installTarget, destination, version.Targets)
 	if err != nil {
 		return err
+	}
+	err = InstallFiles(installTarget, destination, version.Files)
+	if err != nil {
+		return err
+	}
+
+	// Install profile for the Minecraft launcher
+	if installTarget == mcinstall.Client {
+		// Get the target Minecraft version for the pack
+		var mcVersion string
+		for _, target := range version.Targets {
+			if target.Type == "game" {
+				mcVersion = target.Version
+				break
+			}
+		}
+
+		for _, target := range version.Targets {
+			if target.Type == "modloader" {
+				// Minecraft Forge
+				if target.Name == "forge" {
+					versionId := mcVersion + "-forge" + mcVersion + "-" + target.Version
+
+					err = mcinstall.InstallProfile(pack.Slug, &mcinstall.Profile{
+						Name:    pack.Name,
+						Type:    "custom",
+						GameDir: destination,
+						Icon:    "Grass", // todo:
+						Version: versionId,
+					})
+					if err != nil {
+						return err
+					}
+				}
+
+				// todo: other modloaders
+			}
+		}
 	}
 
 	return nil
