@@ -30,30 +30,42 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	// Install profile for the Minecraft launcher
 	if installTarget == mcinstall.Client {
 		// Get the target Minecraft version for the pack
-		var mcVersion string
+		var mcVersion *mcinstall.McVersion
 		for _, target := range version.Targets {
 			if target.Type == "game" {
-				mcVersion = target.Version
+				ver, err := mcinstall.ParseMcVersion(target.Version)
+				if err != nil {
+					return err
+				}
+				mcVersion = ver
 				break
 			}
+		}
+
+		// If we can't determine the game version, we can't really proceed
+		if mcVersion == nil {
+			return FailedToDetermineGameVersion
 		}
 
 		for _, target := range version.Targets {
 			if target.Type == "modloader" {
 				// Minecraft Forge
 				if target.Name == "forge" {
-					versionId := mcVersion + "-forge" + mcVersion + "-" + target.Version
+					var version string
+					// Minecraft 1.13 and above
+					if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
+						version = mcVersion.String() + "-forge-" + target.Version
+					} else {
+						version = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
+					}
 
-					err = mcinstall.InstallProfile(pack.Slug, &mcinstall.Profile{
+					return mcinstall.InstallProfile(pack.Slug, &mcinstall.Profile{
 						Name:    pack.Name,
 						Type:    "custom",
 						GameDir: destination,
 						Icon:    "Grass", // todo:
-						Version: versionId,
+						Version: version,
 					})
-					if err != nil {
-						return err
-					}
 				}
 
 				// todo: other modloaders
