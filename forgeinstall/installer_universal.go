@@ -5,9 +5,12 @@
 package forgeinstall
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/util"
 	"os"
+	"path/filepath"
 )
 
 // See InstallForge
@@ -16,19 +19,31 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 	fmt.Println("Using universal Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
 
+	destination, err := filepath.Abs(dest)
+	if err != nil {
+		return err
+	}
+
 	// Check whether we need to install the server
-	if _, err := os.Stat("forge-" + version + "-universal.jar"); err == nil {
+	if _, err := os.Stat("forge-" + version + "-universal.jar"); err == nil && target == mcinstall.Server {
 		fmt.Println("Minecraft Forge install found, skipping...")
 		return nil
 	}
 
+	// Check whether we need to install the client
+	// todo: implement
+
 	// Download installer
-	installFile, err := downloadForgeInstaller(version)
+	installerJar, err := downloadForgeInstaller(version)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(installFile.Name())
+	defer os.Remove(installerJar.Name())
 
-	// Run installer
-	return runInstaller(target, dest, installFile)
+	if target == mcinstall.Client {
+		// todo: implement support
+		return errors.New("client support not yet implemented")
+	} else {
+		return util.RunCommand("java", "-jar", installerJar.Name(), "--installServer", destination)
+	}
 }

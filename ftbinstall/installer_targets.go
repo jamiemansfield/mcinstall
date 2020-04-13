@@ -43,11 +43,16 @@ func InstallTargets(installTarget mcinstall.InstallTarget, dest string, targets 
 		}
 
 		if target.Type == "modloader" {
-			// todo: use launcher root as dest for Client
+			var loaderDest string
+			if installTarget == mcinstall.Client {
+				loaderDest = mcinstall.GetLauncherDir()
+			} else {
+				loaderDest = dest
+			}
 
 			// Minecraft Forge
 			if target.Name == "forge" {
-				if err := forgeinstall.InstallForge(installTarget, dest, mcVersion, target.Version); err != nil {
+				if err := forgeinstall.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
 					return err
 				}
 			}

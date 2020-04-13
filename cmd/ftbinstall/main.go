@@ -41,16 +41,7 @@ func main() {
 			}
 
 			fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
-			err = ftbinstall.InstallFiles(mcinstall.Server, "", version.Files)
-			if err != nil {
-				return err
-			}
-			err = ftbinstall.InstallTargets(mcinstall.Server, "", version.Targets)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return ftbinstall.InstallPackVersion(mcinstall.Client, "", version)
 		},
 	}
 

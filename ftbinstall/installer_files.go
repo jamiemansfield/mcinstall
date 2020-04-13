@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
 	"net/http"
@@ -75,18 +76,11 @@ func installFile(dest string, file *ftbmeta.File) error {
 	}
 
 	// GET the file
-	req, err := http.NewRequest(http.MethodGet, file.URL, nil)
+	req, err := util.NewRequest(http.MethodGet, file.URL, nil)
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Accept", "*")
-	req.Header.Set("User-Agent", "ftbinstall/0.1.0")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
 
 	// Write file to disk
 	f, err := os.Create(fileDest)
@@ -95,9 +89,5 @@ func installFile(dest string, file *ftbmeta.File) error {
 	}
 	defer f.Close()
 
-	if _, err := io.Copy(f, resp.Body); err != nil {
-		return err
-	}
-
-	return nil
+	return util.Download(f, req)
 }

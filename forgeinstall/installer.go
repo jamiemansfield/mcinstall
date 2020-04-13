@@ -7,12 +7,14 @@ package forgeinstall
 import (
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
-	"io"
-	"io/ioutil"
+	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
+)
+
+const (
+	// The URL to Minecraft Forge's Maven, or a mirror.
+	MavenRoot = "https://files.minecraftforge.net/maven/"
 )
 
 // Installs Minecraft Forge to the given destination, for the given target.
@@ -42,58 +44,11 @@ func downloadForgeInstaller(version string) (*os.File, error) {
 	url := MavenRoot + "net/minecraftforge/forge/" + version + "/forge-" + version + "-installer.jar"
 
 	// Download installer
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := util.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/java,application/java-archive,application/x-java-archive")
-	req.Header.Set("User-Agent", "ftbinstall/0.1.0")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	file, err := ioutil.TempFile("", "forge*.jar")
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := io.Copy(file, resp.Body); err != nil {
-		return nil, err
-	}
-
-	return file, nil
-}
-
-// Runs the given Minecraft Forge installer, installing for the given target,
-// to the given target directory.
-func runInstaller(target mcinstall.InstallTarget, dest string, installerJar *os.File) error {
-	// Use the absolute directory
-	destination, err := filepath.Abs(dest)
-	if err != nil {
-		return err
-	}
-
-	// Create the appropriate arguments for the install target
-	var args []string
-	args = append(args, "-jar", installerJar.Name())
-	if target == mcinstall.Client {
-		args = append(args, "--extract", destination)
-	} else {
-		args = append(args, "--installServer", destination)
-	}
-
-	// Run the command
-	cmd := exec.Command("java", args...)
-
-	// todo: improve
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
-	fmt.Print(string(out))
-
-	return nil
+	return util.DownloadTemp(req, "forge*.jar")
 }
