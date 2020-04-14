@@ -21,12 +21,30 @@ func main() {
 		Name: "ftbinstall",
 		Usage: "install packs from the modpacks.ch service",
 		Version: "0.1.0-indev",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "target",
+				Aliases:  []string{"t"},
+				Usage:    "sets the install target",
+				Value:    "client",
+			},
+		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Args().Len() < 2 {
 				return errors.New("usage: ftbinstall pack version")
 			}
 			packSlug := ctx.Args().Get(0)
 			versionSlug := slug.MakeLang(ctx.Args().Get(1), "en")
+			installTargetRaw := ctx.Value("target").(string)
+			var installTarget mcinstall.InstallTarget
+			if installTargetRaw == "client" || installTargetRaw == "c" {
+				installTarget = mcinstall.Client
+			} else
+			if installTargetRaw == "server" || installTargetRaw == "s" {
+				installTarget = mcinstall.Server
+			} else {
+				return errors.New("unknown install target "+ installTargetRaw)
+			}
 
 			client := ftbmeta.NewClient(nil)
 
@@ -41,7 +59,7 @@ func main() {
 			}
 
 			fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
-			return ftbinstall.InstallPackVersion(mcinstall.Client, "", pack, version)
+			return ftbinstall.InstallPackVersion(installTarget, "", pack, version)
 		},
 	}
 
