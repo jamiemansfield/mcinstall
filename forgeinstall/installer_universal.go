@@ -21,14 +21,18 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 	fmt.Println("Using universal Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
 
-	// Check whether we need to install the server
-	if _, err := os.Stat("forge-" + version + "-universal.jar"); err == nil && target == mcinstall.Server {
+	// Check whether we need to install Minecraft Forge
+	_, serverCheck := os.Stat(filepath.Join(dest,
+		"forge-" + version + "-universal.jar",
+	))
+	_, clientCheck := os.Stat(filepath.Join(dest,
+		"libraries", "net", "minecraftforge", "forge", version, "forge-" + version + ".jar",
+	))
+	if (serverCheck == nil && target == mcinstall.Server) ||
+		(clientCheck == nil && target == mcinstall.Client) {
 		fmt.Println("Minecraft Forge install found, skipping...")
 		return nil
 	}
-
-	// Check whether we need to install the client
-	// todo: implement
 
 	// Download installer
 	installerJar, err := downloadForgeInstaller(version)
