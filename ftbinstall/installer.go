@@ -5,8 +5,12 @@
 package ftbinstall
 
 import (
+	"bytes"
+	"encoding/base64"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"net/http"
 	"path/filepath"
 )
 
@@ -47,6 +51,18 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 			return FailedToDetermineGameVersion
 		}
 
+		// Get icon for pack profile
+		req, err := util.NewRequest(http.MethodGet, pack.Art["square"].URL, nil)
+		if err != nil {
+			return err
+		}
+		writer := new(bytes.Buffer)
+		if err := util.Download(writer, req); err != nil {
+			return err
+		}
+		icon := "data:image/png;base64," + base64.StdEncoding.EncodeToString(writer.Bytes())
+
+		// Create profile
 		for _, target := range version.Targets {
 			if target.Type == "modloader" {
 				// Minecraft Forge
@@ -63,7 +79,7 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 						Name:    pack.Name,
 						Type:    "custom",
 						GameDir: destination,
-						Icon:    "Grass", // todo:
+						Icon:    icon,
 						Version: version,
 					})
 				}
