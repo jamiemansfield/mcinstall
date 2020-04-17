@@ -7,9 +7,12 @@ package ftbinstall
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 )
@@ -20,6 +23,16 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	destination, err := filepath.Abs(dest)
 	if err != nil {
 		return err
+	}
+
+	// Find existing install (or create one)
+	var install *InstallSettings
+	if readJson(filepath.Join(destination, "neptune.json"), &install) != nil {
+		install = &InstallSettings{
+			ID:      uuid.New().String(),
+			Pack:    pack.Slug,
+			Version: version.Slug,
+		}
 	}
 
 	err = InstallTargets(installTarget, destination, version.Targets)
@@ -67,21 +80,24 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 			if target.Type == "modloader" {
 				// Minecraft Forge
 				if target.Name == "forge" {
-					var version string
+					var forgeVersion string
 					// Minecraft 1.13 and above
 					if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
-						version = mcVersion.String() + "-forge-" + target.Version
+						forgeVersion = mcVersion.String() + "-forge-" + target.Version
 					} else {
-						version = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
+						forgeVersion = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
 					}
 
-					return mcinstall.InstallProfile(pack.Slug, &mcinstall.Profile{
-						Name:    pack.Name,
+					if err := mcinstall.InstallProfile(install.ID, &mcinstall.Profile{
+						Name:    pack.Name + " " + version.Name,
 						Type:    "custom",
 						GameDir: destination,
 						Icon:    icon,
-						Version: version,
-					})
+						Version: forgeVersion,
+					}); err != nil {
+						return err
+					}
+					break
 				}
 
 				// todo: other modloaders
@@ -89,5 +105,29 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 		}
 	}
 
-	return nil
+	// Write install settings
+	return writeJson(filepath.Join(destination, "neptune.json"), &install)
+}
+
+// neptune.json
+type InstallSettings struct {
+	ID string `json:"id"`
+	Pack string `json:"pack"`
+	Version string `json:"version"`
+}
+
+func readJson(destination string, v interface{}) error {
+	contents, err := ioutil.ReadFile(destination)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(contents, v)
+}
+
+func writeJson(destination string, v interface{}) error {
+	out, err := json.MarshalIndent(v, "", "\t")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(destination, out, 0644)
 }
