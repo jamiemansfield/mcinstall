@@ -42,7 +42,10 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 	if err != nil {
 		return err
 	}
-	defer os.Remove(installerJar.Name())
+	defer func() {
+		installerJar.Close()
+		os.Remove(installerJar.Name())
+	}()
 
 	// Create the appropriate arguments for the install target
 	var args []string
@@ -51,7 +54,10 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 		if err != nil {
 			return err
 		}
-		defer os.Remove(toolFile.Name())
+		defer func() {
+			toolFile.Close()
+			os.Remove(toolFile.Name())
+		}()
 
 		args = append(args, "-cp", toolFile.Name() + ";" + installerJar.Name(), "me.jamiemansfield.forgeclientinstaller.ClientInstaller", dest)
 	} else {

@@ -39,7 +39,10 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 	if err != nil {
 		return err
 	}
-	defer os.Remove(installerJar.Name())
+	defer func() {
+		installerJar.Close()
+		os.Remove(installerJar.Name())
+	}()
 
 	installerInfo, err := installerJar.Stat()
 	if err != nil {
