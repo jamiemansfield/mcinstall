@@ -21,4 +21,5 @@ compileForgeTool:
 
 ## Builds ftbinstall
 build: compileForgeTool
+	go generate ./forgeinstall
 	go build ./cmd/ftbinstall

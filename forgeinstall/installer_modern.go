@@ -4,19 +4,19 @@
 
 package forgeinstall
 
+//go:generate mule -o modernclient.mule.go -p forgeinstall tool/build/ModernForgeClientTool.class
+
 import (
+	"bytes"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
-	"net/http"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
-const (
-	// The URL to my client install tool
-	ClientInstallTool = "https://repo.neptunepowered.org/tools/forge-client-installer-0.0.2.jar"
-)
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft >= 1.13
@@ -50,31 +50,44 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 	// Create the appropriate arguments for the install target
 	var args []string
 	if target == mcinstall.Client {
-		toolFile, err := downloadClientInstallTool()
+		toolDir, err := copyClientInstallTool()
 		if err != nil {
 			return err
 		}
-		defer func() {
-			toolFile.Close()
-			os.Remove(toolFile.Name())
-		}()
+		defer os.RemoveAll(toolDir)
 
-		args = append(args, "-cp", toolFile.Name() + ";" + installerJar.Name(), "me.jamiemansfield.forgeclientinstaller.ClientInstaller", dest)
+		args = append(args, "-cp", toolDir+ ";" + installerJar.Name(), "ModernForgeClientTool", dest)
 	} else {
 		args = append(args, "-jar", installerJar.Name(), "--installServer", dest)
 	}
 
+	fmt.Println(args)
 	// Run installer
 	return util.RunCommand("java", args...)
 }
 
 // Downloads the Forge Client Installer tool.
 // The temporary file should be removed after usage.
-func downloadClientInstallTool() (*os.File, error) {
-	req, err := util.NewRequest(http.MethodGet, ClientInstallTool, nil)
+func copyClientInstallTool() (string, error) {
+	client, err := modernclientResource()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	req.Header.Set("Accept", "application/java,application/java-archive,application/x-java-archive")
-	return util.DownloadTemp(req, "installtool*.jar")
+
+	dir, err := ioutil.TempDir("", "ftbinstall")
+	if err != nil {
+		return "", err
+	}
+
+	file, err := os.Create(filepath.Join(dir, "ModernForgeClientTool.class"))
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	if _, err := io.Copy(file, bytes.NewReader(client)); err != nil {
+		return "", err
+	}
+
+	return dir, nil
 }
