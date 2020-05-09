@@ -4,7 +4,7 @@
 
 package forgeinstall
 
-//go:generate mule -o modernclient.mule.go -p forgeinstall tool/build/ModernForgeClientTool.class
+//go:generate go run github.com/wlbr/mule -o modernclient.mule.go -p forgeinstall tool/build/forgetool.jar
 
 import (
 	"bytes"
@@ -16,7 +16,6 @@ import (
 	"os"
 	"path/filepath"
 )
-
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft >= 1.13
@@ -50,18 +49,17 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 	// Create the appropriate arguments for the install target
 	var args []string
 	if target == mcinstall.Client {
-		toolDir, err := copyClientInstallTool()
+		toolJar, err := copyClientInstallTool()
 		if err != nil {
 			return err
 		}
-		defer os.RemoveAll(toolDir)
+		defer os.Remove(toolJar)
 
-		args = append(args, "-cp", toolDir+ ";" + installerJar.Name(), "ModernForgeClientTool", dest)
+		args = append(args, "-cp", util.BuildClasspath(toolJar, installerJar.Name()), "ModernForgeClientTool", dest)
 	} else {
 		args = append(args, "-jar", installerJar.Name(), "--installServer", dest)
 	}
 
-	fmt.Println(args)
 	// Run installer
 	return util.RunCommand("java", args...)
 }
@@ -74,20 +72,15 @@ func copyClientInstallTool() (string, error) {
 		return "", err
 	}
 
-	dir, err := ioutil.TempDir("", "ftbinstall")
+	tmp, err := ioutil.TempFile("", "forgetool*.jar")
 	if err != nil {
 		return "", err
 	}
+	defer tmp.Close()
 
-	file, err := os.Create(filepath.Join(dir, "ModernForgeClientTool.class"))
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	if _, err := io.Copy(file, bytes.NewReader(client)); err != nil {
+	if _, err := io.Copy(tmp, bytes.NewReader(client)); err != nil {
 		return "", err
 	}
 
-	return dir, nil
+	return tmp.Name(), nil
 }

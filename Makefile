@@ -14,10 +14,11 @@ help:
 
 ## Compiles the Minecraft Forge install tool
 compileForgeTool:
-	mkdir -p forgeinstall/tool/build
+	mkdir -p forgeinstall/tool/build/classes
 	mkdir -p forgeinstall/tool/libs
 	curl https://files.minecraftforge.net/maven/net/minecraftforge/installer/2.0.14/installer-2.0.14.jar -o forgeinstall/tool/libs/installer.jar
-	javac -cp forgeinstall/tool/libs/installer.jar -d forgeinstall/tool/build forgeinstall/tool/src/ModernForgeClientTool.java
+	javac -cp forgeinstall/tool/libs/installer.jar -d forgeinstall/tool/build/classes forgeinstall/tool/src/ModernForgeClientTool.java
+	jar cf forgeinstall/tool/build/forgetool.jar -C forgeinstall/tool/build/classes .
 
 ## Builds ftbinstall
 build: compileForgeTool
