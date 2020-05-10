@@ -33,12 +33,13 @@ func InstallFiles(install *InstallSettings, target mcinstall.InstallTarget, dest
 
 	// Install files for the target
 	for i, file := range targetFiles {
-		fmt.Printf("[%d / %d] Installing '%s' to '%s'...\n", i + 1, len(targetFiles), file.Name, file.Path)
-
-		if err := installFile(dest, file); err != nil {
-			fmt.Println("Failed to install, ignoring file...")
+		msg, err := installFile(dest, file)
+		if err != nil {
+			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...`n", i + 1, len(targetFiles), file.Path, file.Name)
 			fmt.Println(err)
 			continue
+		} else if msg != "" {
+			fmt.Printf("[%d / %d] %s\n", i + 1, len(targetFiles), msg)
 		}
 
 		// Log the files information in the install settings
@@ -49,7 +50,7 @@ func InstallFiles(install *InstallSettings, target mcinstall.InstallTarget, dest
 }
 
 // Installs the given file, to the destination
-func installFile(dest string, file *ftbmeta.File) error {
+func installFile(dest string, file *ftbmeta.File) (string, error) {
 	dirPath := filepath.Join(dest, filepath.FromSlash(file.Path))
 	fileDest := filepath.Join(dirPath, file.Name)
 
@@ -57,40 +58,39 @@ func installFile(dest string, file *ftbmeta.File) error {
 	if _, err := os.Stat(fileDest); err == nil {
 		f, err := os.Open(fileDest)
 		if err != nil {
-			return err
+			return "", err
 		}
 		defer f.Close()
 
 		hasher := sha1.New()
 		if _, err := io.Copy(hasher, f); err != nil {
-			return err
+			return "", err
 		}
 
 		// If already exists, continue to next file
 		if hex.EncodeToString(hasher.Sum(nil)) == file.Sha1 {
-			fmt.Println("File '" + fileDest + "' already exists, skipping...")
-			return nil
+			return fmt.Sprintf("%s%s found, skipping...", file.Path, file.Name), nil
 		}
 	}
 
 	// Ensure directory exists
 	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
-		return err
+		return "", err
 	}
 
 	// GET the file
 	req, err := util.NewRequest(http.MethodGet, file.URL, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("Accept", "*")
 
 	// Write file to disk
 	f, err := os.Create(fileDest)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer f.Close()
 
-	return util.Download(f, req)
+	return fmt.Sprintf("Installed '%s' to '%s'", file.Name, file.Path), util.Download(f, req)
 }

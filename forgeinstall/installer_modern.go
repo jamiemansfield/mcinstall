@@ -20,7 +20,6 @@ import (
 // See InstallForge
 // Installs Minecraft Forge for Minecraft >= 1.13
 func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
-	fmt.Println("Using modern Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
 
 	// Check whether we need to install Minecraft Forge
@@ -35,6 +34,7 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 		fmt.Println("Minecraft Forge install found, skipping...")
 		return nil
 	}
+	fmt.Printf("Installing Minecraft Forge %s-%s using modern installer...\n", mcVersion, forgeVersion)
 
 	// Download installer
 	installerJar, err := downloadForgeInstaller(version)

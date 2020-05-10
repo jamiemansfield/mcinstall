@@ -5,7 +5,6 @@
 package forgeinstall
 
 import (
-	"fmt"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
@@ -22,8 +21,6 @@ const (
 // the server; if the target is Client, the destination will be the
 // launcher's root directory.
 func InstallForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
-	fmt.Printf("Installing Minecraft Forge %s-%s...\n", mcVersion, forgeVersion)
-
 	// Use modern installer - Minecraft 1.13 and above
 	if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
 		return installModernForge(target, dest, mcVersion, forgeVersion)
