@@ -19,7 +19,7 @@ import (
 
 // Installs the given files, for the target environment, to the given
 // destination.
-func InstallFiles(target mcinstall.InstallTarget, dest string, files []*ftbmeta.File) error {
+func InstallFiles(install *InstallSettings, target mcinstall.InstallTarget, dest string, files []*ftbmeta.File) error {
 	// Collect the target-specific files, so we can keep an accurate count
 	// of how many files we've installed.
 	var targetFiles []*ftbmeta.File
@@ -40,6 +40,9 @@ func InstallFiles(target mcinstall.InstallTarget, dest string, files []*ftbmeta.
 			fmt.Println(err)
 			continue
 		}
+
+		// Log the files information in the install settings
+		install.Files[file.Path + file.Name] = file.Sha1
 	}
 
 	return nil

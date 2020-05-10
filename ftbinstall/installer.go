@@ -8,13 +8,25 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
+)
+
+const (
+	DataDir = ".ftbinstall"
+	SettingsFile = "install.json"
+)
+
+var (
+	OtherPackAlreadyInstalled = errors.New("ftbinstall: a pack is already installed at this location")
 )
 
 // Installs the given pack version to the destination, with the
@@ -26,12 +38,24 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	}
 
 	// Find existing install (or create one)
+	if err := os.MkdirAll(DataDir, os.ModePerm); err != nil {
+		return err
+	}
+
 	var install *InstallSettings
-	if readJson(filepath.Join(destination, "neptune.json"), &install) != nil {
+	if readJson(filepath.Join(destination, DataDir, SettingsFile), &install) != nil {
 		install = &InstallSettings{
 			ID:      uuid.New().String(),
 			Pack:    pack.Slug,
 			Version: version.Slug,
+			Target:  installTarget,
+			Files:   map[string]string{},
+		}
+	} else {
+		fmt.Println("Existing installation of " + install.Pack + " v" + install.Version + " detected")
+
+		if pack.Slug != install.Pack {
+			return OtherPackAlreadyInstalled
 		}
 	}
 
@@ -39,7 +63,7 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	if err != nil {
 		return err
 	}
-	err = InstallFiles(installTarget, destination, version.Files)
+	err = InstallFiles(install, installTarget, destination, version.Files)
 	if err != nil {
 		return err
 	}
@@ -106,14 +130,16 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	}
 
 	// Write install settings
-	return writeJson(filepath.Join(destination, "neptune.json"), &install)
+	return writeJson(filepath.Join(destination, DataDir, SettingsFile), &install)
 }
 
-// neptune.json
+// ftbinstall.json
 type InstallSettings struct {
 	ID string `json:"id"`
 	Pack string `json:"pack"`
 	Version string `json:"version"`
+	Target mcinstall.InstallTarget `json:"target"`
+	Files map[string]string `json:"files"`
 }
 
 func readJson(destination string, v interface{}) error {

@@ -4,9 +4,43 @@
 
 package mcinstall
 
+import (
+	"bytes"
+	"encoding/json"
+)
+
 type InstallTarget int
 
 const (
 	Client InstallTarget = iota
 	Server
 )
+var _ json.Marshaler = (*InstallTarget)(nil)
+var _ json.Unmarshaler = (*InstallTarget)(nil)
+
+func (i InstallTarget) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString(`"`)
+	switch i {
+	case Server:
+		buffer.WriteString("server")
+	default:
+		buffer.WriteString("client")
+	}
+	buffer.WriteString(`"`)
+	return buffer.Bytes(), nil
+}
+
+func (i *InstallTarget) UnmarshalJSON(b []byte) error {
+	var j string
+	err := json.Unmarshal(b, &j)
+	if err != nil {
+		return err
+	}
+	switch j {
+	case "server":
+		*i = Server
+	default:
+		*i = Client
+	}
+	return nil
+}
