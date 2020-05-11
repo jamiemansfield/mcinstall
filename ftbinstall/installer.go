@@ -6,7 +6,9 @@ package ftbinstall
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,15 +16,24 @@ import (
 	"github.com/jamiemansfield/ftbinstall/mcinstall"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
 	DataDir = ".ftbinstall"
 	SettingsFile = "install.json"
+)
+
+var (
+	ExcludedDirs = []string{
+		DataDir,
+		"saves",
+	}
 )
 
 var (
@@ -69,6 +80,73 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 		return err
 	}
 	err = InstallFiles(install, installTarget, destination, version.Files)
+	if err != nil {
+		return err
+	}
+
+	// Remove any unmodified files that are no longer apart the pack
+	err = filepath.Walk(destination, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(destination, path)
+		if err != nil {
+			return err
+		}
+		ftbPath := "./" + filepath.ToSlash(relPath)
+
+		// While this should never be an issue anyway - for peace of mind,
+		// ftbinstall will not delete ANYTHING from a protected directory.
+		parts := strings.Split(relPath, string(filepath.Separator))
+		for _, excludedDir := range ExcludedDirs {
+			if parts[0] == excludedDir {
+				return nil
+			}
+		}
+
+		// Ignore if its a current file
+		if install.NewFiles[ftbPath] != "" {
+			return nil
+		}
+
+		// Check if its been modified
+		if install.OriginalFiles[ftbPath] != "" {
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			hasher := sha1.New()
+			if _, err := io.Copy(hasher, f); err != nil {
+				return err
+			}
+			hash := hex.EncodeToString(hasher.Sum(nil))
+
+			// Delete file
+			if hash == install.OriginalFiles[ftbPath] {
+				fmt.Printf("%s has been removed from the modpack, as its\n", ftbPath)
+				fmt.Println("sha1 hash matches the original, it has been removed.")
+				return os.Remove(path)
+			}
+
+			// The file has been removed from the pack, but the player has modified it
+			fmt.Printf("%s has been removed from the modpack, as its\n", ftbPath)
+			fmt.Println("sha1 hash doesn't match the original - we have left it in place.")
+			fmt.Println("Please investigate whether you still need the file before playing!")
+			fmt.Printf("You can remove the '%s' line from %s/%s if\n", ftbPath, DataDir, SettingsFile)
+			fmt.Println("still required")
+
+			// So that this message continues on, store the original hash in the new file list
+			install.NewFiles[ftbPath] = install.OriginalFiles[ftbPath]
+		}
+
+		return nil
+	})
 	if err != nil {
 		return err
 	}

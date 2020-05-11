@@ -65,7 +65,6 @@ func installFile(install *Install, dest string, file *ftbmeta.File) (string, err
 		if _, err := io.Copy(hasher, f); err != nil {
 			return "", err
 		}
-
 		hash := hex.EncodeToString(hasher.Sum(nil))
 
 		// If already exists, continue to next file
