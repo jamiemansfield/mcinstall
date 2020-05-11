@@ -19,7 +19,7 @@ import (
 
 // Installs the given files, for the target environment, to the given
 // destination.
-func InstallFiles(install *InstallSettings, target mcinstall.InstallTarget, dest string, files []*ftbmeta.File) error {
+func InstallFiles(install *Install, target mcinstall.InstallTarget, dest string, files []*ftbmeta.File) error {
 	// Collect the target-specific files, so we can keep an accurate count
 	// of how many files we've installed.
 	var targetFiles []*ftbmeta.File
@@ -33,24 +33,23 @@ func InstallFiles(install *InstallSettings, target mcinstall.InstallTarget, dest
 
 	// Install files for the target
 	for i, file := range targetFiles {
-		msg, err := installFile(dest, file)
+		msg, err := installFile(install, dest, file)
 		if err != nil {
-			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...`n", i + 1, len(targetFiles), file.Path, file.Name)
+			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i + 1, len(targetFiles), file.Path, file.Name)
 			fmt.Println(err)
 			continue
-		} else if msg != "" {
-			fmt.Printf("[%d / %d] %s\n", i + 1, len(targetFiles), msg)
 		}
+		fmt.Printf("[%d / %d] %s\n", i + 1, len(targetFiles), msg)
 
 		// Log the files information in the install settings
-		install.Files[file.Path + file.Name] = file.Sha1
+		install.NewFiles[file.Path + file.Name] = file.Sha1
 	}
 
 	return nil
 }
 
 // Installs the given file, to the destination
-func installFile(dest string, file *ftbmeta.File) (string, error) {
+func installFile(install *Install, dest string, file *ftbmeta.File) (string, error) {
 	dirPath := filepath.Join(dest, filepath.FromSlash(file.Path))
 	fileDest := filepath.Join(dirPath, file.Name)
 
@@ -67,9 +66,24 @@ func installFile(dest string, file *ftbmeta.File) (string, error) {
 			return "", err
 		}
 
+		hash := hex.EncodeToString(hasher.Sum(nil))
+
 		// If already exists, continue to next file
-		if hex.EncodeToString(hasher.Sum(nil)) == file.Sha1 {
+		if hash == file.Sha1 {
 			return fmt.Sprintf("%s%s found, skipping...", file.Path, file.Name), nil
+		}
+
+		// If the file previously existed, don't override if the player made changes
+		originalHash := install.OriginalFiles[file.Path + file.Name]
+		if originalHash != "" && hash != originalHash {
+			fmt.Println("************************************************************************************************")
+			fmt.Printf("%s%s has a sha1 has of '%s', when\n", file.Path, file.Name, hash)
+			fmt.Printf("'%s' was expected.\n", originalHash)
+			fmt.Printf("To prevent overriding configurations, it will be installed under %s/%s.\n", DataDir, install.Version)
+			fmt.Println("Please investigate any collisions before playing!")
+			fmt.Println("************************************************************************************************")
+
+			return installFile(install, filepath.Join(dest, DataDir, install.Version), file)
 		}
 	}
 

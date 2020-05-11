@@ -42,9 +42,9 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 		return err
 	}
 
-	var install *InstallSettings
-	if readJson(filepath.Join(destination, DataDir, SettingsFile), &install) != nil {
-		install = &InstallSettings{
+	var settings *InstallSettings
+	if readJson(filepath.Join(destination, DataDir, SettingsFile), &settings) != nil {
+		settings = &InstallSettings{
 			ID:      uuid.New().String(),
 			Pack:    pack.Slug,
 			Version: version.Slug,
@@ -52,11 +52,16 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 			Files:   map[string]string{},
 		}
 	} else {
-		fmt.Println("Existing installation of " + install.Pack + " v" + install.Version + " detected")
+		fmt.Println("Existing installation of " + settings.Pack + " v" + settings.Version + " detected")
 
-		if pack.Slug != install.Pack {
+		if pack.Slug != settings.Pack {
 			return OtherPackAlreadyInstalled
 		}
+	}
+	install := &Install{
+		Version:       version.Slug,
+		OriginalFiles: settings.Files,
+		NewFiles:      map[string]string{},
 	}
 
 	err = InstallTargets(installTarget, destination, version.Targets)
@@ -112,7 +117,7 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 						forgeVersion = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
 					}
 
-					if err := mcinstall.InstallProfile(install.ID, &mcinstall.Profile{
+					if err := mcinstall.InstallProfile(settings.ID, &mcinstall.Profile{
 						Name:    pack.Name + " " + version.Name,
 						Type:    "custom",
 						GameDir: destination,
@@ -130,7 +135,15 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	}
 
 	// Write install settings
-	return writeJson(filepath.Join(destination, DataDir, SettingsFile), &install)
+	settings.Version = install.Version
+	settings.Files = install.NewFiles
+	return writeJson(filepath.Join(destination, DataDir, SettingsFile), &settings)
+}
+
+type Install struct {
+	Version string
+	OriginalFiles map[string]string
+	NewFiles map[string]string
 }
 
 // ftbinstall.json
