@@ -43,6 +43,8 @@ var (
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
 func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *ftbmeta.Pack, version *ftbmeta.Version) error {
+	fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
+
 	destination, err := filepath.Abs(dest)
 	if err != nil {
 		return err
@@ -154,10 +156,10 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 	// Install profile for the Minecraft launcher
 	if installTarget == minecraft.Client {
 		// Get the target Minecraft version for the pack
-		var mcVersion *minecraft.McVersion
+		var mcVersion *minecraft.Version
 		for _, target := range version.Targets {
 			if target.Type == "game" {
-				ver, err := minecraft.ParseMcVersion(target.Version)
+				ver, err := minecraft.ParseVersion(target.Version)
 				if err != nil {
 					return err
 				}

@@ -19,10 +19,10 @@ var (
 // destination.
 func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets []*ftbmeta.Target) error {
 	// Get the target Minecraft version for the pack
-	var mcVersion *minecraft.McVersion
+	var mcVersion *minecraft.Version
 	for _, target := range targets {
 		if target.Type == "game" {
-			ver, err := minecraft.ParseMcVersion(target.Version)
+			ver, err := minecraft.ParseVersion(target.Version)
 			if err != nil {
 				return err
 			}

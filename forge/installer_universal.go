@@ -17,7 +17,7 @@ import (
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft 1.5 -> 1.12
-func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
+func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
 	fmt.Println("Using universal Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
 

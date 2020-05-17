@@ -19,7 +19,7 @@ import (
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft >= 1.13
-func installModernForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
+func installModernForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
 	version := mcVersion.String() + "-" + forgeVersion
 
 	// Check whether we need to install Minecraft Forge

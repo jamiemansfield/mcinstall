@@ -8,6 +8,8 @@ github.com/gosimple/slug v1.9.0/go.mod h1:AMZ+sOVe65uByN3kgEyf9WEBKBCSS+dJjMX9x4
 github.com/jamiemansfield/go-ftbmeta v0.2.0 h1:9bPMr/MvAD9dTt6fXpZH07TugmJVMkm+fEdjs3n+qjg=
 github.com/jamiemansfield/go-ftbmeta v0.2.0/go.mod h1:aB03NfZD8PSYfRZJ68yXcz29xC1UH9g9PaU7rvunae0=
 github.com/jamiemansfield/go-modpacksch v0.2.0/go.mod h1:hkgnGDTmTHCbWC+LhcbBCVZWuaUxBy+rAHexeH2NMaI=
+github.com/jamiemansfield/go-technic v0.1.0 h1:BE803zlthz93oeOdWDdywZcY72xQGyrKYLx3Edqj9aM=
+github.com/jamiemansfield/go-technic v0.1.0/go.mod h1:OkultkpfkaxpAEdLF42Y9E6hfaMsBMIf6Yh0hCtPSXU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be h1:ta7tUOvsPHVHGom5hKW5VXNc2xZIkfCKP8iaqOyYtUQ=

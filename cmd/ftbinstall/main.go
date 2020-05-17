@@ -6,7 +6,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gosimple/slug"
 	"github.com/jamiemansfield/ftbinstall/ftb"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
@@ -58,7 +57,6 @@ func main() {
 				return err
 			}
 
-			fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
 			return ftb.InstallPackVersion(installTarget, "", pack, version)
 		},
 	}

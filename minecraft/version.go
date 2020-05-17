@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-type McVersion struct {
+type Version struct {
 	Major int
 	Minor int
 	Revision int
 }
 
-func ParseMcVersion(version string) (*McVersion, error) {
+func ParseVersion(version string) (*Version, error) {
 	parts := strings.Split(version, ".")
 
 	if len(parts) < 2 {
@@ -41,14 +41,14 @@ func ParseMcVersion(version string) (*McVersion, error) {
 		revision = 0
 	}
 
-	return &McVersion{
+	return &Version{
 		Major:    major,
 		Minor:    minor,
 		Revision: revision,
 	}, nil
 }
 
-func (v *McVersion) String() string {
+func (v *Version) String() string {
 	if v.Revision == 0 {
 		return strconv.Itoa(v.Major) + "." + strconv.Itoa(v.Minor)
 	}

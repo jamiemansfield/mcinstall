@@ -20,7 +20,7 @@ const (
 // If the target is Server, the destination will be the root directory of
 // the server; if the target is Client, the destination will be the
 // launcher's root directory.
-func InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
+func InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
 	// Use modern installer - Minecraft 1.13 and above
 	if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
 		return installModernForge(target, dest, mcVersion, forgeVersion)

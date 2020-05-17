@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // Gets the *zip.File of the given name in the given zip file.
@@ -32,4 +33,24 @@ func CopyZipFileToDisk(file *zip.File, dest string) error {
 
 	_, err = io.Copy(f, r)
 	return err
+}
+
+// Extracts the given zip file to the local file system.
+func ExtractZipFileToDisk(zipFile *zip.Reader, dest string) error {
+	for _, file := range zipFile.File {
+		localPath := filepath.Join(dest, file.Name)
+
+		if file.FileInfo().IsDir() {
+			err := os.MkdirAll(localPath, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := CopyZipFileToDisk(file, localPath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
