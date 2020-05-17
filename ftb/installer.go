@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
@@ -197,7 +198,7 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 						forgeVersion = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
 					}
 
-					if err := minecraft.InstallProfile(settings.ID, &minecraft.Profile{
+					if err := launcher.InstallProfile(settings.ID, &launcher.Profile{
 						Name:    pack.Name + " " + version.Name,
 						Type:    "custom",
 						GameDir: destination,

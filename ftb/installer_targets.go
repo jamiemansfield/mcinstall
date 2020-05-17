@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/jamiemansfield/ftbinstall/forge"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 )
 
@@ -45,7 +46,7 @@ func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets 
 		if target.Type == "modloader" {
 			var loaderDest string
 			if installTarget == minecraft.Client {
-				loaderDest = minecraft.GetLauncherDir()
+				loaderDest = launcher.GetLauncherDir()
 			} else {
 				loaderDest = dest
 			}

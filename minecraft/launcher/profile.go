@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package minecraft
+package launcher
 
 import (
 	"encoding/json"
@@ -44,18 +44,4 @@ func InstallProfile(id string, profile *Profile) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
 	return encoder.Encode(&raw)
-}
-
-// Struct for creating simple version JSONs.
-type LauncherVersion struct {
-	ID string `json:"id"`
-	Type string `json:"type"`
-	InheritsFrom string `json:"inheritsFrom"`
-	MainClass string `json:"mainClass,omitempty"`
-	Libraries []*LauncherVersionLibrary `json:"libraries"`
-}
-
-type LauncherVersionLibrary struct {
-	Name string `json:"name"`
-	URL string `json:"url,omitempty"`
 }

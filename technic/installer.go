@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/jamiemansfield/go-technic/solder"
@@ -83,11 +84,11 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 	_, versionJsonExists := os.Stat(filepath.Join(dest,
 		"bin", "version.json",
 	))
-	_, libraryExists := os.Stat(filepath.Join(minecraft.GetLauncherDir(),
+	_, libraryExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
 		"libraries", "net", "technicpack", "pack", pack.Name, version, pack.Name + "-" + version + ".jar",
 	))
 	versionName := mcVersion.String() + "-" + pack.Name + "-" + version
-	_, versionExists := os.Stat(filepath.Join(minecraft.GetLauncherDir(),
+	_, versionExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
 		"versions", versionName, versionName + ".json",
 	))
 
@@ -98,7 +99,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		} else {
 			fmt.Printf("Installing library...\n")
 
-			libraryDir := filepath.Join(minecraft.GetLauncherDir(),
+			libraryDir := filepath.Join(launcher.GetLauncherDir(),
 				"libraries", "net", "technicpack", "pack", pack.Name, version,
 			)
 			if err := os.MkdirAll(libraryDir, os.ModePerm); err != nil {
@@ -128,7 +129,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 	if versionExists != nil {
 		fmt.Printf("Installing version '%s'...\n", versionName)
 
-		versionDir := filepath.Join(minecraft.GetLauncherDir(), "versions", versionName)
+		versionDir := filepath.Join(launcher.GetLauncherDir(), "versions", versionName)
 		if err := os.MkdirAll(versionDir, os.ModePerm); err != nil {
 			return err
 		}
@@ -156,11 +157,11 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 			}
 		} else {
 			// Create simple version for modpack
-			launcherVersion := &minecraft.LauncherVersion{
+			launcherVersion := &launcher.Version{
 				ID:           versionName,
 				Type:         "release",
 				InheritsFrom: mcVersion.String(),
-				Libraries: []*minecraft.LauncherVersionLibrary{
+				Libraries: []*launcher.VersionLibrary{
 					{
 						Name: "net.technicpack.pack:" + pack.Name + ":" + version,
 					},
@@ -183,7 +184,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 	}
 
 	// Create a profile for the Minecraft launcher
-	return minecraft.InstallProfile(pack.Name, &minecraft.Profile{
+	return launcher.InstallProfile(pack.Name, &launcher.Profile{
 		Name:    pack.Name + " " + version,
 		Type:    "custom",
 		GameDir: destination,
