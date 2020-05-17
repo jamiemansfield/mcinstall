@@ -9,8 +9,10 @@ type Version struct {
 	ID string                   `json:"id"`
 	Type string                 `json:"type"`
 	InheritsFrom string         `json:"inheritsFrom"`
+	Time string                 `json:"time,omitempty"`
+	ReleaseTime string          `json:"releaseTime,omitempty"`
 	MainClass string            `json:"mainClass,omitempty"`
-	Libraries []*VersionLibrary `json:"libraries"`
+	Libraries []*VersionLibrary `json:"libraries,omitempty"`
 }
 
 type VersionLibrary struct {

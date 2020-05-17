@@ -11,15 +11,16 @@ import (
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
+	"github.com/jamiemansfield/ftbinstall/minecraft/manifest"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/jamiemansfield/go-technic/solder"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Installs the given pack version to the destination, with the
@@ -43,21 +44,24 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		}
 		client.BaseURL = solderUrl
 
-		solderPack, err := client.Modpack.GetModpack(pack.Name)
-		if err != nil {
-			return err
-		}
-		solderVersion, err := client.Modpack.GetBuild(pack.Name, version)
+		build, err := client.Modpack.GetBuild(pack.Name, version)
 		if err != nil {
 			return err
 		}
 
-		err = InstallSolderBuild(destination, solderPack, solderVersion)
-		if err != nil {
-			return err
+		fmt.Printf("Installing from Solder...\n")
+
+		total := len(build.Mods)
+		for i, mod := range build.Mods {
+			fmt.Printf("[%d / %d] Installing %s...\n", i + 1, total, mod.Name)
+
+			err := downloadAndExtractZip(mod.URL, dest)
+			if err != nil {
+				return err
+			}
 		}
 
-		mcVersion, err = minecraft.ParseVersion(solderVersion.Minecraft)
+		mcVersion, err = minecraft.ParseVersion(build.Minecraft)
 		if err != nil {
 			return err
 		}
@@ -84,56 +88,25 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 	_, versionJsonExists := os.Stat(filepath.Join(dest,
 		"bin", "version.json",
 	))
-	_, libraryExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
-		"libraries", "net", "technicpack", "pack", pack.Name, version, pack.Name + "-" + version + ".jar",
-	))
 	versionName := mcVersion.String() + "-" + pack.Name + "-" + version
-	_, versionExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
+	_, launcherVersionJsonExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
 		"versions", versionName, versionName + ".json",
 	))
-
-	// Create a library for the pack (pack-version), if bin/modpack.jar exists
-	if modpackJarExists == nil {
-		if libraryExists == nil {
-			fmt.Printf("Library already installed\n")
-		} else {
-			fmt.Printf("Installing library...\n")
-
-			libraryDir := filepath.Join(launcher.GetLauncherDir(),
-				"libraries", "net", "technicpack", "pack", pack.Name, version,
-			)
-			if err := os.MkdirAll(libraryDir, os.ModePerm); err != nil {
-				return err
-			}
-
-			// Open bin/modpack.jar and launcher library
-			modpackJarFile, err := os.Open(filepath.Join(dest, "bin", "modpack.jar"))
-			if err != nil {
-				return err
-			}
-			defer modpackJarFile.Close()
-			versionJarFile, err := os.Create(filepath.Join(libraryDir, pack.Name + "-" + version + ".jar"))
-			if err != nil {
-				return err
-			}
-			defer versionJarFile.Close()
-
-			_, err = io.Copy(versionJarFile, modpackJarFile)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	_, launcherVersionJarExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
+		"versions", versionName, versionName + ".jar",
+	))
 
 	// Create a version for the pack (mcversion-pack-version)
-	if versionExists != nil {
+	versionDir := filepath.Join(launcher.GetLauncherDir(), "versions", versionName)
+	if err := os.MkdirAll(versionDir, os.ModePerm); err != nil {
+		return err
+	}
+
+	if launcherVersionJsonExists != nil || launcherVersionJarExists != nil {
 		fmt.Printf("Installing version '%s'...\n", versionName)
+	}
 
-		versionDir := filepath.Join(launcher.GetLauncherDir(), "versions", versionName)
-		if err := os.MkdirAll(versionDir, os.ModePerm); err != nil {
-			return err
-		}
-
+	if launcherVersionJsonExists != nil {
 		if versionJsonExists == nil {
 			// Open bin/modpack.json and launcher version
 			modpackJsonFile, err := os.Open(filepath.Join(dest, "bin", "version.json"))
@@ -161,11 +134,6 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				ID:           versionName,
 				Type:         "release",
 				InheritsFrom: mcVersion.String(),
-				Libraries: []*launcher.VersionLibrary{
-					{
-						Name: "net.technicpack.pack:" + pack.Name + ":" + version,
-					},
-				},
 			}
 			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
 			if err != nil {
@@ -183,6 +151,93 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		}
 	}
 
+	if launcherVersionJarExists != nil {
+		// Download client.jar to temporary path
+		fmt.Println("Downloading Minecraft client jar...")
+
+		versionManifest, err := manifest.GetVersionManifest(nil)
+		if err != nil {
+			return err
+		}
+		versionInfo := versionManifest.FindVersion(mcVersion.String())
+		if versionInfo == nil {
+			return errors.New("failed to find Minecraft version " + mcVersion.String())
+		}
+		version, err := versionInfo.GetFull(nil)
+		if err != nil {
+			return err
+		}
+
+		// Download to temporary path
+		req, err := util.NewRequest(http.MethodGet, version.Downloads.Client.URL, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Add("Accepts", "*")
+
+		tmp, err := util.DownloadTemp(req, "client*.jar")
+		if err != nil {
+			return err
+		}
+		defer func() {
+			tmp.Close()
+			os.Remove(tmp.Name())
+		}()
+
+		tmpStat, err := tmp.Stat()
+		if err != nil {
+			return err
+		}
+
+		// We need to merge bin/modpack.jar with the client.jar
+		if modpackJarExists == nil {
+			modpackJarFile, err := os.Open(filepath.Join(dest, "bin", "modpack.jar"))
+			if err != nil {
+				return err
+			}
+			defer modpackJarFile.Close()
+			modpackJarStat, err := modpackJarFile.Stat()
+			if err != nil {
+				return err
+			}
+
+			// Open jars
+			modpackJar, err := zip.NewReader(modpackJarFile, modpackJarStat.Size())
+			if err != nil {
+				return err
+			}
+			clientJar, err := zip.NewReader(tmp, tmpStat.Size())
+			if err != nil {
+				return err
+			}
+
+			// Create new jar
+			versionJarFile, err := os.Create(filepath.Join(launcher.GetLauncherDir(),
+				"versions", versionName, versionName + ".jar",
+			))
+			if err != nil {
+				return err
+			}
+			zw := zip.NewWriter(versionJarFile)
+			defer func() {
+				versionJarFile.Close()
+				zw.Close()
+			}()
+
+			var files []string
+			files, err = util.MergeZips(zw, modpackJar, files, nil)
+			if err != nil {
+				return err
+			}
+			files, err = util.MergeZips(zw, clientJar, files, func(name string) bool {
+				return !strings.HasPrefix(name, "META-INF/")
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	// Create a profile for the Minecraft launcher
 	return launcher.InstallProfile(pack.Name, &launcher.Profile{
 		Name:    pack.Name + " " + version,
@@ -190,29 +245,6 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		GameDir: destination,
 		Version: versionName,
 	})
-}
-
-func InstallSolderBuild(dest string, pack *solder.Modpack, build *solder.Build) error {
-	fmt.Printf("Installing from Solder...\n")
-
-	// Download the zips to a temporary directory
-	tmp, err := ioutil.TempDir(dest, "")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmp)
-
-	total := len(build.Mods)
-	for i, mod := range build.Mods {
-		fmt.Printf("[%d / %d] Installing %s...\n", i + 1, total, mod.Name)
-
-		err = downloadAndExtractZip(mod.URL, dest)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func downloadAndExtractZip(url string, dest string) error {

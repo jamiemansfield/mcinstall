@@ -54,3 +54,53 @@ func ExtractZipFileToDisk(zipFile *zip.Reader, dest string) error {
 	}
 	return nil
 }
+
+func MergeZips(into *zip.Writer, from *zip.Reader, files []string, filter func(string) bool) ([]string, error) {
+	for _, file := range from.File {
+		if filter != nil && filter(file.Name) {
+			continue
+		}
+		if contains(files, file.Name) {
+			continue
+		}
+		files = append(files, file.Name)
+
+		if err := copyZipFile(into, file); err != nil {
+			return nil, err
+		}
+	}
+
+	return files, nil
+}
+
+func copyZipFile(into *zip.Writer, file *zip.File) error {
+	r, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	w, err := into.Create(file.Name)
+	if err != nil {
+		return err
+	}
+
+	// Copy file contents
+	if !file.FileInfo().IsDir() {
+		_, err = io.Copy(w, r)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func contains(files []string, file string) bool {
+	for _, f := range files {
+		if f == file {
+			return true
+		}
+	}
+	return false
+}
