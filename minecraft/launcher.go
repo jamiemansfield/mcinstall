@@ -45,3 +45,17 @@ func InstallProfile(id string, profile *Profile) error {
 	encoder.SetIndent("", "\t")
 	return encoder.Encode(&raw)
 }
+
+// Struct for creating simple version JSONs.
+type LauncherVersion struct {
+	ID string `json:"id"`
+	Type string `json:"type"`
+	InheritsFrom string `json:"inheritsFrom"`
+	MainClass string `json:"mainClass,omitempty"`
+	Libraries []*LauncherVersionLibrary `json:"libraries"`
+}
+
+type LauncherVersionLibrary struct {
+	Name string `json:"name"`
+	URL string `json:"url,omitempty"`
+}
