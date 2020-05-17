@@ -2,12 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package ftbinstall
+package ftb
 
 import (
 	"errors"
-	"github.com/jamiemansfield/ftbinstall/forgeinstall"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/forge"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 )
 
@@ -17,12 +17,12 @@ var (
 
 // Installs the given targets, for the target environment, to the given
 // destination.
-func InstallTargets(installTarget mcinstall.InstallTarget, dest string, targets []*ftbmeta.Target) error {
+func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets []*ftbmeta.Target) error {
 	// Get the target Minecraft version for the pack
-	var mcVersion *mcinstall.McVersion
+	var mcVersion *minecraft.McVersion
 	for _, target := range targets {
 		if target.Type == "game" {
-			ver, err := mcinstall.ParseMcVersion(target.Version)
+			ver, err := minecraft.ParseMcVersion(target.Version)
 			if err != nil {
 				return err
 			}
@@ -44,15 +44,15 @@ func InstallTargets(installTarget mcinstall.InstallTarget, dest string, targets 
 
 		if target.Type == "modloader" {
 			var loaderDest string
-			if installTarget == mcinstall.Client {
-				loaderDest = mcinstall.GetLauncherDir()
+			if installTarget == minecraft.Client {
+				loaderDest = minecraft.GetLauncherDir()
 			} else {
 				loaderDest = dest
 			}
 
 			// Minecraft Forge
 			if target.Name == "forge" {
-				if err := forgeinstall.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
+				if err := forge.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
 					return err
 				}
 			}

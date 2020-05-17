@@ -4,7 +4,7 @@
  * THIS FILE SHOULD NOT BE EDITED BY HAND
  */
 
-package forgeinstall
+package forge
 
 import "encoding/base64"
 

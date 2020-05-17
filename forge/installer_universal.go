@@ -2,13 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package forgeinstall
+package forge
 
 import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"io"
 	"os"
@@ -17,7 +17,7 @@ import (
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft 1.5 -> 1.12
-func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
+func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
 	fmt.Println("Using universal Forge installer...")
 	version := mcVersion.String() + "-" + forgeVersion
 
@@ -28,8 +28,8 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 	_, clientCheck := os.Stat(filepath.Join(dest,
 		"libraries", "net", "minecraftforge", "forge", version, "forge-" + version + ".jar",
 	))
-	if (serverCheck == nil && target == mcinstall.Server) ||
-		(clientCheck == nil && target == mcinstall.Client) {
+	if (serverCheck == nil && target == minecraft.Server) ||
+		(clientCheck == nil && target == minecraft.Client) {
 		fmt.Println("Minecraft Forge install found, skipping...")
 		return nil
 	}
@@ -49,7 +49,7 @@ func installUniversalForge(target mcinstall.InstallTarget, dest string, mcVersio
 		return err
 	}
 
-	if target == mcinstall.Client {
+	if target == minecraft.Client {
 		versionName := mcVersion.String() + "-forge" + version
 
 		// Open installer jar, so we can pull files

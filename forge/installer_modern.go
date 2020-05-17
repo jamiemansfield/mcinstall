@@ -2,14 +2,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package forgeinstall
+package forge
 
 //go:generate go run github.com/wlbr/mule -o modernclient.mule.go -p forgeinstall tool/build/forgetool.jar
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"io"
 	"io/ioutil"
@@ -19,7 +19,7 @@ import (
 
 // See InstallForge
 // Installs Minecraft Forge for Minecraft >= 1.13
-func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
+func installModernForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
 	version := mcVersion.String() + "-" + forgeVersion
 
 	// Check whether we need to install Minecraft Forge
@@ -29,8 +29,8 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 	_, clientCheck := os.Stat(filepath.Join(dest,
 		"libraries", "net", "minecraftforge", "forge", version, "forge-" + version + ".jar",
 	))
-	if (serverCheck == nil && target == mcinstall.Server) ||
-		(clientCheck == nil && target == mcinstall.Client) {
+	if (serverCheck == nil && target == minecraft.Server) ||
+		(clientCheck == nil && target == minecraft.Client) {
 		fmt.Println("Minecraft Forge install found, skipping...")
 		return nil
 	}
@@ -48,7 +48,7 @@ func installModernForge(target mcinstall.InstallTarget, dest string, mcVersion *
 
 	// Create the appropriate arguments for the install target
 	var args []string
-	if target == mcinstall.Client {
+	if target == minecraft.Client {
 		toolJar, err := copyClientInstallTool()
 		if err != nil {
 			return err

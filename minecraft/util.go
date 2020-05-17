@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package mcinstall
+package minecraft
 
 import (
 	"os"
@@ -11,7 +11,7 @@ import (
 )
 
 // Gets the root directory of the Minecraft Launcher for the system
-// mcinstall is running on.
+// minecraft is running on.
 func GetLauncherDir() string {
 	if runtime.GOOS == "windows" {
 		if appdata, present := os.LookupEnv("APPDATA"); present {

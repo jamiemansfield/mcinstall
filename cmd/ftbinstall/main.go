@@ -8,8 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gosimple/slug"
-	"github.com/jamiemansfield/ftbinstall/ftbinstall"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/ftb"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"github.com/urfave/cli/v2"
 	"log"
@@ -36,12 +36,12 @@ func main() {
 			packSlug := ctx.Args().Get(0)
 			versionSlug := slug.MakeLang(ctx.Args().Get(1), "en")
 			installTargetRaw := ctx.Value("target").(string)
-			var installTarget mcinstall.InstallTarget
+			var installTarget minecraft.InstallTarget
 			if installTargetRaw == "client" || installTargetRaw == "c" {
-				installTarget = mcinstall.Client
+				installTarget = minecraft.Client
 			} else
 			if installTargetRaw == "server" || installTargetRaw == "s" {
-				installTarget = mcinstall.Server
+				installTarget = minecraft.Server
 			} else {
 				return errors.New("unknown install target "+ installTargetRaw)
 			}
@@ -59,7 +59,7 @@ func main() {
 			}
 
 			fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
-			return ftbinstall.InstallPackVersion(installTarget, "", pack, version)
+			return ftb.InstallPackVersion(installTarget, "", pack, version)
 		},
 	}
 

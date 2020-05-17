@@ -2,10 +2,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package forgeinstall
+package forge
 
 import (
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
 	"os"
@@ -20,7 +20,7 @@ const (
 // If the target is Server, the destination will be the root directory of
 // the server; if the target is Client, the destination will be the
 // launcher's root directory.
-func InstallForge(target mcinstall.InstallTarget, dest string, mcVersion *mcinstall.McVersion, forgeVersion string) error {
+func InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.McVersion, forgeVersion string) error {
 	// Use modern installer - Minecraft 1.13 and above
 	if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
 		return installModernForge(target, dest, mcVersion, forgeVersion)

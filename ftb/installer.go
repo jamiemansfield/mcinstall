@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package ftbinstall
+package ftb
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
@@ -37,12 +37,12 @@ var (
 )
 
 var (
-	OtherPackAlreadyInstalled = errors.New("ftbinstall: a pack is already installed at this location")
+	OtherPackAlreadyInstalled = errors.New("ftb: a pack is already installed at this location")
 )
 
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
-func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack *ftbmeta.Pack, version *ftbmeta.Version) error {
+func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *ftbmeta.Pack, version *ftbmeta.Version) error {
 	destination, err := filepath.Abs(dest)
 	if err != nil {
 		return err
@@ -152,12 +152,12 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 	}
 
 	// Install profile for the Minecraft launcher
-	if installTarget == mcinstall.Client {
+	if installTarget == minecraft.Client {
 		// Get the target Minecraft version for the pack
-		var mcVersion *mcinstall.McVersion
+		var mcVersion *minecraft.McVersion
 		for _, target := range version.Targets {
 			if target.Type == "game" {
-				ver, err := mcinstall.ParseMcVersion(target.Version)
+				ver, err := minecraft.ParseMcVersion(target.Version)
 				if err != nil {
 					return err
 				}
@@ -195,7 +195,7 @@ func InstallPackVersion(installTarget mcinstall.InstallTarget, dest string, pack
 						forgeVersion = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
 					}
 
-					if err := mcinstall.InstallProfile(settings.ID, &mcinstall.Profile{
+					if err := minecraft.InstallProfile(settings.ID, &minecraft.Profile{
 						Name:    pack.Name + " " + version.Name,
 						Type:    "custom",
 						GameDir: destination,
@@ -226,11 +226,11 @@ type Install struct {
 
 // ftbinstall.json
 type InstallSettings struct {
-	ID string `json:"id"`
-	Pack string `json:"pack"`
-	Version string `json:"version"`
-	Target mcinstall.InstallTarget `json:"target"`
-	Files map[string]string `json:"files"`
+	ID      string                  `json:"id"`
+	Pack    string                  `json:"pack"`
+	Version string                  `json:"version"`
+	Target  minecraft.InstallTarget `json:"target"`
+	Files   map[string]string       `json:"files"`
 }
 
 func readJson(destination string, v interface{}) error {

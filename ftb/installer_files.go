@@ -2,13 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-package ftbinstall
+package ftb
 
 import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/mcinstall"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
@@ -19,13 +19,13 @@ import (
 
 // Installs the given files, for the target environment, to the given
 // destination.
-func InstallFiles(install *Install, target mcinstall.InstallTarget, dest string, files []*ftbmeta.File) error {
+func InstallFiles(install *Install, target minecraft.InstallTarget, dest string, files []*ftbmeta.File) error {
 	// Collect the target-specific files, so we can keep an accurate count
 	// of how many files we've installed.
 	var targetFiles []*ftbmeta.File
 	for _, file := range files {
 		// Ignore files for another target
-		if (target == mcinstall.Client && file.ServerOnly) || (target == mcinstall.Server && file.ClientOnly) {
+		if (target == minecraft.Client && file.ServerOnly) || (target == minecraft.Server && file.ClientOnly) {
 			continue
 		}
 		targetFiles = append(targetFiles, file)
