@@ -4,17 +4,15 @@
 
 package launcher
 
-import "time"
-
 // Struct for creating simple version JSONs.
 type Version struct {
 	ID string                   `json:"id"`
 	Type string                 `json:"type"`
 	InheritsFrom string         `json:"inheritsFrom"`
-	Time time.Time              `json:"time,omitempty"`
-	ReleaseTime time.Time       `json:"releaseTime,omitempty"`
 	MainClass string            `json:"mainClass,omitempty"`
 	Libraries []*VersionLibrary `json:"libraries,omitempty"`
+	Downloads struct {
+	} `json:"downloads"`
 }
 
 type VersionLibrary struct {

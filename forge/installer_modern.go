@@ -4,7 +4,7 @@
 
 package forge
 
-//go:generate go run github.com/wlbr/mule -o modernclient.mule.go -p forgeinstall tool/build/forgetool.jar
+//go:generate go run github.com/wlbr/mule -o modernclient.mule.go -p forge tool/build/forgetool.jar
 
 import (
 	"bytes"
