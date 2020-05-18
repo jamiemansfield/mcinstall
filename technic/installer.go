@@ -108,7 +108,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 
 	if launcherVersionJsonExists != nil {
 		if versionJsonExists == nil {
-			// Open bin/modpack.json and launcher version
+			// Open bin/version.json and launcher version
 			modpackJsonFile, err := os.Open(filepath.Join(dest, "bin", "version.json"))
 			if err != nil {
 				return err
@@ -220,8 +220,8 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 			}
 			zw := zip.NewWriter(versionJarFile)
 			defer func() {
-				versionJarFile.Close()
 				zw.Close()
+				versionJarFile.Close()
 			}()
 
 			var files []string
@@ -230,7 +230,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				return err
 			}
 			files, err = util.MergeZips(zw, clientJar, files, func(name string) bool {
-				return !strings.HasPrefix(name, "META-INF/")
+				return strings.HasPrefix(name, "META-INF/")
 			})
 			if err != nil {
 				return err
