@@ -6,14 +6,11 @@ package technic
 
 import (
 	"archive/zip"
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
-	"github.com/jamiemansfield/ftbinstall/minecraft/manifest"
 	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/jamiemansfield/go-technic/solder"
@@ -131,31 +128,33 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				return err
 			}
 		} else {
-			// TODO: support newer versions (>= 1.6) of Minecraft
-
-			// Install LegacyLaunch
-			legacyLaunch, mainClass, err := launcher.InstallLegacyLaunch(launcher.GetLauncherDir())
-			if err != nil {
-				return err
-			}
-
 			// Create simple version for modpack
 			launcherVersion := &launcher.Version{
 				ID:           versionName,
 				Type:         "release",
 				InheritsFrom: mcVersion.String(),
-				MainClass:    mainClass,
-				Libraries: []*launcher.VersionLibrary{
-					legacyLaunch,
-				},
 			}
+
+			// Use LegacyLaunch for pre-1.6 packs
+			if mcVersion.Major < 1 || (mcVersion.Major == 1 && mcVersion.Minor < 6) {
+				fmt.Println("Installing LegacyLaunch")
+
+				legacyLaunch, mainClass, err := launcher.InstallLegacyLaunch(launcher.GetLauncherDir())
+				if err != nil {
+					return err
+				}
+
+				launcherVersion.MainClass = mainClass
+				launcherVersion.Libraries = append(launcherVersion.Libraries, legacyLaunch)
+			}
+
 			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
 			if err != nil {
 				return err
 			}
 			defer versionJsonFile.Close()
 
-			// Rewrite version.json, and save to launcher
+			// Save version.json to launcher
 			encoder := json.NewEncoder(versionJsonFile)
 			encoder.SetIndent("", "\t")
 			err = encoder.Encode(launcherVersion)
@@ -165,112 +164,92 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		}
 	}
 
-	if launcherVersionJarExists != nil {
-		// Download client.jar to temporary path
-		fmt.Println("Downloading Minecraft client jar...")
-
-		versionManifest, err := manifest.GetVersionManifest(nil)
-		if err != nil {
-			return err
-		}
-		versionInfo := versionManifest.FindVersion(mcVersion.String())
-		if versionInfo == nil {
-			return errors.New("failed to find Minecraft version " + mcVersion.String())
-		}
-		version, err := versionInfo.GetFull(nil)
-		if err != nil {
+	if launcherVersionJarExists != nil && modpackJarExists == nil {
+		// Ensure that the client.jar exists
+		if err := launcher.InstallClientVersion(launcher.GetLauncherDir(), mcVersion.String()); err != nil {
 			return err
 		}
 
-		// Download to temporary path
-		req, err := util.NewRequest(http.MethodGet, version.Downloads.Client.URL, nil)
+		// Open client.jar
+		clientJarFile, err := os.Open(filepath.Join(launcher.GetLauncherDir(),
+			"versions", mcVersion.String(), mcVersion.String() + ".jar",
+		))
 		if err != nil {
 			return err
 		}
-		req.Header.Add("Accepts", "*")
+		defer clientJarFile.Close()
+		clientJarStat, err := clientJarFile.Stat()
+		if err != nil {
+			return err
+		}
 
-		tmp, err := util.DownloadTemp(req, "client*.jar")
+		// Open modpack.jar
+		modpackJarFile, err := os.Open(filepath.Join(dest, "bin", "modpack.jar"))
 		if err != nil {
 			return err
 		}
+		defer modpackJarFile.Close()
+		modpackJarStat, err := modpackJarFile.Stat()
+		if err != nil {
+			return err
+		}
+
+		// Open jars
+		modpackJar, err := zip.NewReader(modpackJarFile, modpackJarStat.Size())
+		if err != nil {
+			return err
+		}
+		clientJar, err := zip.NewReader(clientJarFile, clientJarStat.Size())
+		if err != nil {
+			return err
+		}
+
+		// Create new jar
+		versionJarFile, err := os.Create(filepath.Join(launcher.GetLauncherDir(),
+			"versions", versionName, versionName + ".jar",
+		))
+		if err != nil {
+			return err
+		}
+		zw := zip.NewWriter(versionJarFile)
 		defer func() {
-			tmp.Close()
-			os.Remove(tmp.Name())
+			zw.Close()
+			versionJarFile.Close()
 		}()
 
-		tmpStat, err := tmp.Stat()
+		var files []string
+		files, err = util.MergeZips(zw, modpackJar, files, nil)
 		if err != nil {
 			return err
 		}
-
-		// We need to merge bin/modpack.jar with the client.jar
-		if modpackJarExists == nil {
-			modpackJarFile, err := os.Open(filepath.Join(dest, "bin", "modpack.jar"))
-			if err != nil {
-				return err
-			}
-			defer modpackJarFile.Close()
-			modpackJarStat, err := modpackJarFile.Stat()
-			if err != nil {
-				return err
-			}
-
-			// Open jars
-			modpackJar, err := zip.NewReader(modpackJarFile, modpackJarStat.Size())
-			if err != nil {
-				return err
-			}
-			clientJar, err := zip.NewReader(tmp, tmpStat.Size())
-			if err != nil {
-				return err
-			}
-
-			// Create new jar
-			versionJarFile, err := os.Create(filepath.Join(launcher.GetLauncherDir(),
-				"versions", versionName, versionName + ".jar",
-			))
-			if err != nil {
-				return err
-			}
-			zw := zip.NewWriter(versionJarFile)
-			defer func() {
-				zw.Close()
-				versionJarFile.Close()
-			}()
-
-			var files []string
-			files, err = util.MergeZips(zw, modpackJar, files, nil)
-			if err != nil {
-				return err
-			}
-			files, err = util.MergeZips(zw, clientJar, files, func(name string) bool {
-				return strings.HasPrefix(name, "META-INF/")
-			})
-			if err != nil {
-				return err
-			}
+		files, err = util.MergeZips(zw, clientJar, files, func(name string) bool {
+			return strings.HasPrefix(name, "META-INF/")
+		})
+		if err != nil {
+			return err
 		}
 	}
 
-	// Get pack icon
-	req, err := util.NewRequest(http.MethodGet, pack.Icon.URL, nil)
-	if err != nil {
-		return err
-	}
-	writer := new(bytes.Buffer)
-	if err := util.Download(writer, req); err != nil {
-		return err
-	}
-	icon := "data:image/png;base64," + base64.StdEncoding.EncodeToString(writer.Bytes())
-
 	// Create a profile for the Minecraft launcher
-	return launcher.InstallProfile(pack.Name, &launcher.Profile{
+	profile := &launcher.Profile{
 		Name:    pack.DisplayName + " " + version,
 		Type:    "custom",
 		GameDir: destination,
-		Icon:    icon,
 		Version: versionName,
-	})
+	}
+
+	// Attempt to add pack icon to pack
+	if pack.Icon != nil {
+		icon, err := launcher.CreateIconFromURL(pack.Icon.URL)
+		if err != nil {
+			fmt.Printf("Failed to get pack icon: %e", err)
+		} else {
+			profile.Icon = icon
+		}
+	}
+
+	// Install the profile to the launcher
+	return launcher.InstallProfile(pack.Name, profile)
 }
 
 func downloadAndExtractZip(url string, dest string) error {

@@ -5,9 +5,7 @@
 package ftb
 
 import (
-	"bytes"
 	"crypto/sha1"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -15,11 +13,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -174,18 +170,22 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 			return FailedToDetermineGameVersion
 		}
 
-		// Get icon for pack profile
-		req, err := util.NewRequest(http.MethodGet, pack.Art["square"].URL, nil)
-		if err != nil {
-			return err
-		}
-		writer := new(bytes.Buffer)
-		if err := util.Download(writer, req); err != nil {
-			return err
-		}
-		icon := "data:image/png;base64," + base64.StdEncoding.EncodeToString(writer.Bytes())
-
 		// Create profile
+		profile := &launcher.Profile{
+			Name:    pack.Name + " " + version.Name,
+			Type:    "custom",
+			GameDir: destination,
+		}
+
+		// Add icon to pack
+		icon, err := launcher.CreateIconFromURL(pack.Art["square"].URL)
+		if err != nil {
+			fmt.Printf("Failed to get pack icon: %e", err)
+		} else {
+			profile.Icon = icon
+		}
+
+		// Set profile version, based on modloader in use
 		for _, target := range version.Targets {
 			if target.Type == "modloader" {
 				// Minecraft Forge
@@ -198,20 +198,17 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 						forgeVersion = mcVersion.String() + "-forge" + mcVersion.String() + "-" + target.Version
 					}
 
-					if err := launcher.InstallProfile(settings.ID, &launcher.Profile{
-						Name:    pack.Name + " " + version.Name,
-						Type:    "custom",
-						GameDir: destination,
-						Icon:    icon,
-						Version: forgeVersion,
-					}); err != nil {
-						return err
-					}
+					profile.Version = forgeVersion
 					break
 				}
 
 				// todo: other modloaders
 			}
+		}
+
+		// Install profile
+		if err := launcher.InstallProfile(settings.ID, profile); err != nil {
+			return err
 		}
 	}
 

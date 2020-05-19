@@ -5,8 +5,12 @@
 package launcher
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"github.com/jamiemansfield/ftbinstall/util"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -44,4 +48,18 @@ func InstallProfile(id string, profile *Profile) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
 	return encoder.Encode(&raw)
+}
+
+// CreateIconFromURL creates a string that can be used within a Profile
+// as a profile icon, from a remote resource.
+func CreateIconFromURL(url string) (string, error) {
+	req, err := util.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	writer := new(bytes.Buffer)
+	if err := util.Download(writer, req); err != nil {
+		return "", err
+	}
+	return "data:image/png;base64," + base64.StdEncoding.EncodeToString(writer.Bytes()), nil
 }
