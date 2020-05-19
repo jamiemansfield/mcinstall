@@ -6,6 +6,8 @@ package technic
 
 import (
 	"archive/zip"
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -250,11 +252,23 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 		}
 	}
 
+	// Get pack icon
+	req, err := util.NewRequest(http.MethodGet, pack.Icon.URL, nil)
+	if err != nil {
+		return err
+	}
+	writer := new(bytes.Buffer)
+	if err := util.Download(writer, req); err != nil {
+		return err
+	}
+	icon := "data:image/png;base64," + base64.StdEncoding.EncodeToString(writer.Bytes())
+
 	// Create a profile for the Minecraft launcher
 	return launcher.InstallProfile(pack.Name, &launcher.Profile{
-		Name:    pack.Name + " " + version,
+		Name:    pack.DisplayName + " " + version,
 		Type:    "custom",
 		GameDir: destination,
+		Icon:    icon,
 		Version: versionName,
 	})
 }
