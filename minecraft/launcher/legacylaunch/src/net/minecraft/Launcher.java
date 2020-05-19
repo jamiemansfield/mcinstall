@@ -9,16 +9,19 @@ import java.applet.AppletStub;
 import java.awt.BorderLayout;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 public class Launcher extends Applet implements AppletStub {
 
     private static final String BASE = "http://www.minecraft.net/game/";
 
     private final Applet minecraftApplet;
+    private final Map<String, String> args;
 
-    public Launcher(final Applet minecraftApplet) {
+    public Launcher(final Applet minecraftApplet, final Map<String, String> args) {
         this.minecraftApplet = minecraftApplet;
         this.minecraftApplet.setStub(this);
+        this.args = args;
 
         this.setLayout(new BorderLayout());
         this.add(minecraftApplet, BorderLayout.CENTER);
@@ -52,6 +55,9 @@ public class Launcher extends Applet implements AppletStub {
 
     @Override
     public String getParameter(final String name) {
+        final String value = this.args.get(name);
+        if (value != null) return value;
+
         System.out.println("Client asked for '" + name + "' parameter");
 
         switch (name) {
@@ -65,12 +71,7 @@ public class Launcher extends Applet implements AppletStub {
                 return "false";
         }
 
-        try {
-            return super.getParameter(name);
-        }
-        catch (final Exception ignored) {
-            return null;
-        }
+        return null;
     }
 
     @Override

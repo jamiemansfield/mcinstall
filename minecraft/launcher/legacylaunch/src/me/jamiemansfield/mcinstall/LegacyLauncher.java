@@ -22,6 +22,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class LegacyLauncher {
 
@@ -36,8 +39,11 @@ public final class LegacyLauncher {
             e.printStackTrace(System.out);
         });
 
+        // Parse arguments
+        final Map<String, String> params = parseArguments(args);
+
         // Create frame for wrapped applet
-        final Frame frame = createFrame("Tekkit Classic 3.1.2");
+        final Frame frame = createFrame(params.getOrDefault("legacylaunch.title", "Minecraft (LegacyLaunch)"));
         frame.setVisible(true);
 
         // Give the frame the default initial size, using a temporary panel with a
@@ -55,7 +61,7 @@ public final class LegacyLauncher {
             // Rewrite the Minecraft class to use the correct game directory
             rewriteMinecraft(Paths.get(""));
 
-            final Launcher launcher = new Launcher(createMinecraftApplet());
+            final Launcher launcher = new Launcher(createMinecraftApplet(), params);
 
             frame.removeAll();
             frame.setLayout(new BorderLayout());
@@ -71,6 +77,45 @@ public final class LegacyLauncher {
             ex.printStackTrace(System.out);
             System.exit(-1);
         }
+    }
+
+    private static Map<String, String> parseArguments(final String[] args) {
+        final Map<String, String> params = new HashMap<>();
+
+        // First 2 arguments are username and session ID
+        params.put("username", args[0]);
+        params.put("sessionid", args[1]);
+
+        final String[] remaining = Arrays.copyOfRange(args, 2, args.length);
+        for (int i = 0; i < remaining.length; i++) {
+            final String arg = remaining[i];
+
+            // If arg doesn't begin with --, its a bad argument
+            if (!arg.startsWith("--")) {
+                System.out.println("Bad argument: " + arg);
+                continue;
+            }
+
+            final String key;
+            final String value;
+            // --key=value
+            if (arg.contains("=")) {
+                final String[] split = arg.split("=");
+
+                key = split[0].substring(2);
+                value = split[1];
+            }
+            // --key value
+            else {
+                // TODO: handle just --arg?
+                key = arg.substring(2);
+                value = remaining[++i];
+            }
+
+            params.put(key, value);
+        }
+
+        return params;
     }
 
     private static void rewriteMinecraft(final Path dir) throws Throwable {

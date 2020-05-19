@@ -21,6 +21,9 @@ buildForgeTool:
 	javac -cp forge/tool/libs/installer.jar -d forge/tool/build/classes \
 		forge/tool/src/ModernForgeClientTool.java
 	jar cf forge/tool/build/forgetool.jar -C forge/tool/build/classes .
+
+## Generates the Mule file for the Forge install tool
+generateForgeTool: buildForgeTool
 	go generate ./forge
 
 ## Builds Legacy Launcher
@@ -30,9 +33,12 @@ buildLegacyLauncher:
 		minecraft/launcher/legacylaunch/src/me/jamiemansfield/mcinstall/LegacyLauncher.java \
 		minecraft/launcher/legacylaunch/src/net/minecraft/Launcher.java
 	jar cf minecraft/launcher/legacylaunch/build/legacylaunch-1.0.0.jar -C minecraft/launcher/legacylaunch/build/classes .
+
+## Generates the Mule file for LegacyLaunch
+generateLegacyLauncher: buildLegacyLauncher
 	go generate ./minecraft/launcher
 
 ## Builds mcinstall
-build: buildForgeTool buildLegacyLauncher
+build:
 	go build ./cmd/ftbinstall
 	go build ./cmd/technicinstall
