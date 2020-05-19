@@ -129,11 +129,23 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				return err
 			}
 		} else {
+			// TODO: support newer versions (>= 1.6) of Minecraft
+
+			// Install LegacyLaunch
+			legacyLaunch, mainClass, err := launcher.InstallLegacyLaunch(launcher.GetLauncherDir())
+			if err != nil {
+				return err
+			}
+
 			// Create simple version for modpack
 			launcherVersion := &launcher.Version{
 				ID:           versionName,
 				Type:         "release",
 				InheritsFrom: mcVersion.String(),
+				MainClass:    mainClass,
+				Libraries: []*launcher.VersionLibrary{
+					legacyLaunch,
+				},
 			}
 			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
 			if err != nil {
