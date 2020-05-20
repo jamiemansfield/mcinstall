@@ -6,17 +6,18 @@ package main
 
 import (
 	"errors"
+	"log"
+	"os"
+
 	"github.com/jamiemansfield/ftbinstall/technic"
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/urfave/cli/v2"
-	"log"
-	"os"
 )
 
 func main() {
 	app := &cli.App{
-		Name: "technicinstall",
-		Usage: "install packs from the Technic Pack",
+		Name:    "technicinstall",
+		Usage:   "install packs from the Technic Pack",
 		Version: "0.1.0-indev",
 		Action: func(ctx *cli.Context) error {
 			if ctx.Args().Len() < 2 {

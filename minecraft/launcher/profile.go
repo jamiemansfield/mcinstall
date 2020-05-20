@@ -8,19 +8,20 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 // Struct for quickly creating new profiles.
 type Profile struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
 	GameDir string `json:"gameDir"`
-	Icon string `json:"icon"`
+	Icon    string `json:"icon"`
 	Version string `json:"lastVersionId"`
 }
 

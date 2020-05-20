@@ -6,8 +6,9 @@ package manifest
 
 import (
 	"encoding/json"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
+
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 func GetVersionManifest(httpClient *http.Client) (*VersionManifest, error) {

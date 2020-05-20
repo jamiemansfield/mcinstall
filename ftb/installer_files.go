@@ -8,13 +8,14 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
-	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 )
 
 // Installs the given files, for the target environment, to the given
@@ -35,14 +36,14 @@ func InstallFiles(install *Install, target minecraft.InstallTarget, dest string,
 	for i, file := range targetFiles {
 		msg, err := installFile(install, dest, file)
 		if err != nil {
-			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i + 1, len(targetFiles), file.Path, file.Name)
+			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i+1, len(targetFiles), file.Path, file.Name)
 			fmt.Println(err)
 			continue
 		}
-		fmt.Printf("[%d / %d] %s\n", i + 1, len(targetFiles), msg)
+		fmt.Printf("[%d / %d] %s\n", i+1, len(targetFiles), msg)
 
 		// Log the files information in the install settings
-		install.NewFiles[file.Path + file.Name] = file.Sha1
+		install.NewFiles[file.Path+file.Name] = file.Sha1
 	}
 
 	return nil
@@ -73,7 +74,7 @@ func installFile(install *Install, dest string, file *ftbmeta.File) (string, err
 		}
 
 		// If the file previously existed, don't override if the player made changes
-		originalHash := install.OriginalFiles[file.Path + file.Name]
+		originalHash := install.OriginalFiles[file.Path+file.Name]
 		if originalHash != "" && hash != originalHash {
 			fmt.Println("************************************************************************************************")
 			fmt.Printf("%s%s has a sha1 has of '%s', when\n", file.Path, file.Name, hash)

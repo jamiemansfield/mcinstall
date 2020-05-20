@@ -9,17 +9,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
-	"github.com/jamiemansfield/ftbinstall/util"
-	"github.com/jamiemansfield/go-technic/platform"
-	"github.com/jamiemansfield/go-technic/solder"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
+	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/go-technic/platform"
+	"github.com/jamiemansfield/go-technic/solder"
 )
 
 // Installs the given pack version to the destination, with the
@@ -52,7 +53,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 
 		total := len(build.Mods)
 		for i, mod := range build.Mods {
-			fmt.Printf("[%d / %d] Installing %s...\n", i + 1, total, mod.Name)
+			fmt.Printf("[%d / %d] Installing %s...\n", i+1, total, mod.Name)
 
 			err := downloadAndExtractZip(mod.URL, dest)
 			if err != nil {
@@ -89,10 +90,10 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 	))
 	versionName := mcVersion.String() + "-" + pack.Name + "-" + version
 	_, launcherVersionJsonExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
-		"versions", versionName, versionName + ".json",
+		"versions", versionName, versionName+".json",
 	))
 	_, launcherVersionJarExists := os.Stat(filepath.Join(launcher.GetLauncherDir(),
-		"versions", versionName, versionName + ".jar",
+		"versions", versionName, versionName+".jar",
 	))
 
 	// Create a version for the pack (mcversion-pack-version)
@@ -113,7 +114,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				return err
 			}
 			defer modpackJsonFile.Close()
-			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
+			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName+".json"))
 			if err != nil {
 				return err
 			}
@@ -148,7 +149,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 				launcherVersion.Libraries = append(launcherVersion.Libraries, legacyLaunch)
 			}
 
-			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
+			versionJsonFile, err := os.Create(filepath.Join(versionDir, versionName+".json"))
 			if err != nil {
 				return err
 			}
@@ -172,7 +173,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 
 		// Open client.jar
 		clientJarFile, err := os.Open(filepath.Join(launcher.GetLauncherDir(),
-			"versions", mcVersion.String(), mcVersion.String() + ".jar",
+			"versions", mcVersion.String(), mcVersion.String()+".jar",
 		))
 		if err != nil {
 			return err
@@ -206,7 +207,7 @@ func InstallPackVersion(dest string, pack *platform.Modpack, version string) err
 
 		// Create new jar
 		versionJarFile, err := os.Create(filepath.Join(launcher.GetLauncherDir(),
-			"versions", versionName, versionName + ".jar",
+			"versions", versionName, versionName+".jar",
 		))
 		if err != nil {
 			return err

@@ -5,10 +5,11 @@
 package forge
 
 import (
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
 	"os"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 const (

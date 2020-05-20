@@ -6,26 +6,27 @@ package main
 
 import (
 	"errors"
+	"log"
+	"os"
+
 	"github.com/gosimple/slug"
 	"github.com/jamiemansfield/ftbinstall/ftb"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"github.com/urfave/cli/v2"
-	"log"
-	"os"
 )
 
 func main() {
 	app := &cli.App{
-		Name: "ftbinstall",
-		Usage: "install packs from the modpacks.ch service",
+		Name:    "ftbinstall",
+		Usage:   "install packs from the modpacks.ch service",
 		Version: "0.1.0-indev",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "target",
-				Aliases:  []string{"t"},
-				Usage:    "sets the install target",
-				Value:    "client",
+				Name:    "target",
+				Aliases: []string{"t"},
+				Usage:   "sets the install target",
+				Value:   "client",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -42,7 +43,7 @@ func main() {
 			if installTargetRaw == "server" || installTargetRaw == "s" {
 				installTarget = minecraft.Server
 			} else {
-				return errors.New("unknown install target "+ installTargetRaw)
+				return errors.New("unknown install target " + installTargetRaw)
 			}
 
 			client := ftbmeta.NewClient(nil)

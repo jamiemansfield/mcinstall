@@ -7,27 +7,28 @@ package launcher
 import (
 	"errors"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/minecraft/manifest"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft/manifest"
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 // Struct for creating simple version JSONs.
 type Version struct {
-	ID string                   `json:"id"`
-	Type string                 `json:"type"`
-	InheritsFrom string         `json:"inheritsFrom"`
-	MainClass string            `json:"mainClass,omitempty"`
-	Libraries []*VersionLibrary `json:"libraries,omitempty"`
-	Downloads struct {
+	ID           string            `json:"id"`
+	Type         string            `json:"type"`
+	InheritsFrom string            `json:"inheritsFrom"`
+	MainClass    string            `json:"mainClass,omitempty"`
+	Libraries    []*VersionLibrary `json:"libraries,omitempty"`
+	Downloads    struct {
 	} `json:"downloads"`
 }
 
 type VersionLibrary struct {
 	Name string `json:"name"`
-	URL string `json:"url,omitempty"`
+	URL  string `json:"url,omitempty"`
 }
 
 var (
@@ -38,8 +39,8 @@ var (
 // launcher directory.
 func InstallClientVersion(launcherDir string, versionName string) error {
 	versionDir := filepath.Join(launcherDir, "versions", versionName)
-	versionJar := filepath.Join(versionDir, versionName + ".jar")
-	versionJson := filepath.Join(versionDir, versionName + ".json")
+	versionJar := filepath.Join(versionDir, versionName+".jar")
+	versionJson := filepath.Join(versionDir, versionName+".json")
 
 	// Check whether we need to install the client version
 	_, versionJarExists := os.Stat(versionJar)

@@ -8,7 +8,7 @@ import "time"
 
 type VersionManifest struct {
 	Latest struct {
-		Release string `json:"release"`
+		Release  string `json:"release"`
 		Snapshot string `json:"snapshot"`
 	} `json:"latest"`
 	Versions []*VersionManifestVersion `json:"versions"`
@@ -25,9 +25,9 @@ func (m *VersionManifest) FindVersion(id string) *VersionManifestVersion {
 }
 
 type VersionManifestVersion struct {
-	ID string `json:"id"`
-	Type string `json:"type"`
-	URL string `json:"url"`
-	Time time.Time `json:"time"`
+	ID          string    `json:"id"`
+	Type        string    `json:"type"`
+	URL         string    `json:"url"`
+	Time        time.Time `json:"time"`
 	ReleaseTime time.Time `json:"releaseTime"`
 }

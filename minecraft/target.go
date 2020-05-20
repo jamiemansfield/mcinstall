@@ -15,6 +15,7 @@ const (
 	Client InstallTarget = iota
 	Server
 )
+
 var _ json.Marshaler = (*InstallTarget)(nil)
 var _ json.Unmarshaler = (*InstallTarget)(nil)
 

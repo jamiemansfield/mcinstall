@@ -10,19 +10,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
-	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/google/uuid"
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
+	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 )
 
 const (
-	DataDir = ".ftbinstall"
+	DataDir      = ".ftbinstall"
 	SettingsFile = "install.json"
 )
 
@@ -219,9 +220,9 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 }
 
 type Install struct {
-	Version string
+	Version       string
 	OriginalFiles map[string]string
-	NewFiles map[string]string
+	NewFiles      map[string]string
 }
 
 // ftbinstall.json

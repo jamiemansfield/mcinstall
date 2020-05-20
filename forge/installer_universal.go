@@ -8,11 +8,12 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 // See InstallForge
@@ -23,10 +24,10 @@ func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersio
 
 	// Check whether we need to install Minecraft Forge
 	_, serverCheck := os.Stat(filepath.Join(dest,
-		"forge-" + version + "-universal.jar",
+		"forge-"+version+"-universal.jar",
 	))
 	_, clientCheck := os.Stat(filepath.Join(dest,
-		"libraries", "net", "minecraftforge", "forge", version, "forge-" + version + ".jar",
+		"libraries", "net", "minecraftforge", "forge", version, "forge-"+version+".jar",
 	))
 	if (serverCheck == nil && target == minecraft.Server) ||
 		(clientCheck == nil && target == minecraft.Client) {
@@ -82,7 +83,7 @@ func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersio
 		if err != nil {
 			return err
 		}
-		infoFile, err := os.Create(filepath.Join(versionDir, versionName + ".json"))
+		infoFile, err := os.Create(filepath.Join(versionDir, versionName+".json"))
 		if err != nil {
 			return err
 		}
@@ -95,11 +96,11 @@ func installUniversalForge(target minecraft.InstallTarget, dest string, mcVersio
 		}
 
 		// Save Forge universal jar to disk
-		universalJar, err := util.GetFileInZip(reader, "forge-" + version + "-universal.jar")
+		universalJar, err := util.GetFileInZip(reader, "forge-"+version+"-universal.jar")
 		if err != nil {
 			return err
 		}
-		return util.CopyZipFileToDisk(universalJar, filepath.Join(libraryDir, "forge-" + version + ".jar"))
+		return util.CopyZipFileToDisk(universalJar, filepath.Join(libraryDir, "forge-"+version+".jar"))
 	} else {
 		return util.RunCommand("java", "-jar", installerJar.Name(), "--installServer", dest)
 	}

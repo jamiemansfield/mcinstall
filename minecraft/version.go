@@ -11,8 +11,8 @@ import (
 )
 
 type Version struct {
-	Major int
-	Minor int
+	Major    int
+	Minor    int
 	Revision int
 }
 

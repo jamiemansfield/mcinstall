@@ -9,12 +9,13 @@ package forge
 import (
 	"bytes"
 	"fmt"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/jamiemansfield/ftbinstall/minecraft"
+	"github.com/jamiemansfield/ftbinstall/util"
 )
 
 // See InstallForge
@@ -24,10 +25,10 @@ func installModernForge(target minecraft.InstallTarget, dest string, mcVersion *
 
 	// Check whether we need to install Minecraft Forge
 	_, serverCheck := os.Stat(filepath.Join(dest,
-		"forge-" + version + ".jar",
+		"forge-"+version+".jar",
 	))
 	_, clientCheck := os.Stat(filepath.Join(dest,
-		"libraries", "net", "minecraftforge", "forge", version, "forge-" + version + ".jar",
+		"libraries", "net", "minecraftforge", "forge", version, "forge-"+version+".jar",
 	))
 	if (serverCheck == nil && target == minecraft.Server) ||
 		(clientCheck == nil && target == minecraft.Client) {

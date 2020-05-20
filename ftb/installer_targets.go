@@ -6,6 +6,7 @@ package ftb
 
 import (
 	"errors"
+
 	"github.com/jamiemansfield/ftbinstall/forge"
 	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
