@@ -41,9 +41,7 @@ func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets 
 	// Install mod loaders, etc
 	for _, target := range targets {
 		if target.Type == "game" {
-			if err := launcher.InstallClientVersion(launcher.GetLauncherDir(), target.Version); err != nil {
-				return err
-			}
+			continue
 		} else
 		if target.Type == "modloader" {
 			var loaderDest string
