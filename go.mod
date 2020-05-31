@@ -1,4 +1,4 @@
-module github.com/jamiemansfield/ftbinstall
+module github.com/jamiemansfield/mcinstall
 
 go 1.13
 

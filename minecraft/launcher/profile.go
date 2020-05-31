@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // Struct for quickly creating new profiles.

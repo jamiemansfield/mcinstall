@@ -16,11 +16,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/jamiemansfield/go-technic/solder"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // Installs the given pack version to the destination, with the

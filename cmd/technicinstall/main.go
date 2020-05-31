@@ -9,8 +9,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/jamiemansfield/ftbinstall/technic"
 	"github.com/jamiemansfield/go-technic/platform"
+	"github.com/jamiemansfield/mcinstall/technic"
 	"github.com/urfave/cli/v2"
 )
 

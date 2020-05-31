@@ -12,8 +12,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // See InstallForge

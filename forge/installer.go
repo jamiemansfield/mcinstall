@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 const (

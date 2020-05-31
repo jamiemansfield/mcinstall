@@ -10,9 +10,9 @@ import (
 	"os"
 
 	"github.com/gosimple/slug"
-	"github.com/jamiemansfield/ftbinstall/ftb"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/mcinstall/ftb"
+	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/urfave/cli/v2"
 )
 

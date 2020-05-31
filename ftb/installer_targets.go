@@ -7,10 +7,10 @@ package ftb
 import (
 	"errors"
 
-	"github.com/jamiemansfield/ftbinstall/forge"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/mcinstall/forge"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
 
 var (

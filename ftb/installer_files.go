@@ -13,9 +13,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/util"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // Installs the given files, for the target environment, to the given

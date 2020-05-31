@@ -17,9 +17,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jamiemansfield/ftbinstall/minecraft"
-	"github.com/jamiemansfield/ftbinstall/minecraft/launcher"
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
 
 const (

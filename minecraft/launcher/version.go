@@ -11,8 +11,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jamiemansfield/ftbinstall/minecraft/manifest"
-	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/mcinstall/minecraft/manifest"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // Struct for creating simple version JSONs.

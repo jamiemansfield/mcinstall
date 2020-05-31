@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/jamiemansfield/ftbinstall/util"
+	"github.com/jamiemansfield/mcinstall/util"
 )
 
 func GetVersionManifest(httpClient *http.Client) (*VersionManifest, error) {
