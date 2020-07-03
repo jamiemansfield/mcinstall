@@ -12,10 +12,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/util"
+	"go.uber.org/atomic"
 )
 
 // Installs the given files, for the target environment, to the given
@@ -33,20 +35,44 @@ func InstallFiles(install *Install, target minecraft.InstallTarget, dest string,
 	}
 
 	// Install files for the target
-	for i, file := range targetFiles {
-		msg, err := installFile(install, dest, file)
-		if err != nil {
-			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i+1, len(targetFiles), file.Path, file.Name)
-			fmt.Println(err)
-			continue
-		}
-		fmt.Printf("[%d / %d] %s\n", i+1, len(targetFiles), msg)
+	var wg sync.WaitGroup
+	var newFiles sync.Map
+	var current atomic.Int64
+	var size int
+	for _, file := range targetFiles {
+		wg.Add(1)
+		go installFileWrapper(&wg, install, dest, file, &current, len(targetFiles), &newFiles)
 
-		// Log the files information in the install settings
-		install.NewFiles[file.Path+file.Name] = file.Sha1
+		// Every 5MB we'll wait for all downloads to complete
+		size += file.Size
+		if size > 5_000_000 {
+			wg.Wait()
+			size = 0
+		}
 	}
+	wg.Wait()
+
+	newFiles.Range(func(key, value interface{}) bool {
+		install.NewFiles[key.(string)] = value.(string)
+		return true
+	})
 
 	return nil
+}
+
+func installFileWrapper(wg *sync.WaitGroup, install *Install, dest string, file *ftbmeta.File, i *atomic.Int64, total int, newFiles *sync.Map) {
+	defer wg.Done()
+
+	msg, err := installFile(install, dest, file)
+	if err != nil {
+		fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i.Inc(), total, file.Path, file.Name)
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("[%d / %d] %s\n", i.Inc(), total, msg)
+
+	// Log the files information in the install settings
+	newFiles.Store(file.Path+file.Name, file.Sha1)
 }
 
 // Installs the given file, to the destination
