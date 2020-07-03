@@ -11,6 +11,7 @@ import (
 
 	"github.com/jamiemansfield/go-technic/platform"
 	"github.com/jamiemansfield/mcinstall/technic"
+	"github.com/jamiemansfield/mcinstall/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,6 +28,8 @@ func main() {
 			version := ctx.Args().Get(1)
 
 			client := platform.NewClient(nil)
+			client.UserAgent = util.UserAgent
+			client.Build = "mcinstall"
 
 			pack, err := client.Modpack.GetModpack(packSlug)
 			if err != nil {

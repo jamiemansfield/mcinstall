@@ -9,6 +9,10 @@ import (
 	"net/http"
 )
 
+const (
+	UserAgent = "mcinstall/0.1.0"
+)
+
 // See http.NewRequest
 // Populates the Header with our User-Agent
 func NewRequest(method, url string, body io.Reader) (*http.Request, error) {
@@ -16,6 +20,6 @@ func NewRequest(method, url string, body io.Reader) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "ftbinstall/0.1.0")
+	req.Header.Set("User-Agent", UserAgent)
 	return req, nil
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
 	"github.com/jamiemansfield/mcinstall/ftb"
 	"github.com/jamiemansfield/mcinstall/minecraft"
+	"github.com/jamiemansfield/mcinstall/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -47,6 +48,7 @@ func main() {
 			}
 
 			client := ftbmeta.NewClient(nil)
+			client.UserAgent = util.UserAgent
 
 			pack, err := client.Packs.GetPack(packSlug)
 			if err != nil {
