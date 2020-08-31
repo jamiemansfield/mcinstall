@@ -12,18 +12,19 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
-	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/util"
 )
 
 // Installs the given files, for the target environment, to the given
 // destination.
-func InstallFiles(install *Install, target minecraft.InstallTarget, dest string, files []*ftbmeta.File) error {
+func InstallFiles(install *Install, target minecraft.InstallTarget, dest string, files []*modpacksch.File) error {
 	// Collect the target-specific files, so we can keep an accurate count
 	// of how many files we've installed.
-	var targetFiles []*ftbmeta.File
+	var targetFiles []*modpacksch.File
 	for _, file := range files {
 		// Ignore files for another target
 		if (target == minecraft.Client && file.ServerOnly) || (target == minecraft.Server && file.ClientOnly) {
@@ -50,7 +51,7 @@ func InstallFiles(install *Install, target minecraft.InstallTarget, dest string,
 }
 
 // Installs the given file, to the destination
-func installFile(install *Install, dest string, file *ftbmeta.File) (string, error) {
+func installFile(install *Install, dest string, file *modpacksch.File) (string, error) {
 	dirPath := filepath.Join(dest, filepath.FromSlash(file.Path))
 	fileDest := filepath.Join(dirPath, file.Name)
 
@@ -83,7 +84,7 @@ func installFile(install *Install, dest string, file *ftbmeta.File) (string, err
 			fmt.Println("Please investigate any collisions before playing!")
 			fmt.Println("************************************************************************************************")
 
-			return installFile(install, filepath.Join(dest, DataDir, install.Version), file)
+			return installFile(install, filepath.Join(dest, DataDir, strconv.Itoa(install.Version)), file)
 		}
 	}
 

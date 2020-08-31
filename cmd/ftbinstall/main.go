@@ -8,9 +8,9 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 
-	"github.com/gosimple/slug"
-	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/ftb"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/util"
@@ -34,9 +34,17 @@ func main() {
 			if ctx.Args().Len() < 2 {
 				return errors.New("usage: ftbinstall pack version")
 			}
-			packSlug := ctx.Args().Get(0)
-			versionSlug := slug.MakeLang(ctx.Args().Get(1), "en")
+
+			packId, err := strconv.Atoi(ctx.Args().Get(0))
+			if err != nil {
+				return errors.New("usage: pack must be an integer")
+			}
+			versionId, err := strconv.Atoi(ctx.Args().Get(1))
+			if err != nil {
+				return errors.New("usage: version must be an integer")
+			}
 			installTargetRaw := ctx.Value("target").(string)
+
 			var installTarget minecraft.InstallTarget
 			if installTargetRaw == "client" || installTargetRaw == "c" {
 				installTarget = minecraft.Client
@@ -47,15 +55,15 @@ func main() {
 				return errors.New("unknown install target " + installTargetRaw)
 			}
 
-			client := ftbmeta.NewClient(nil)
+			client := modpacksch.NewClient(nil)
 			client.UserAgent = util.UserAgent
 
-			pack, err := client.Packs.GetPack(packSlug)
+			pack, err := client.Packs.GetPack(packId)
 			if err != nil {
 				return err
 			}
 
-			version, err := client.Packs.GetVersion(packSlug, versionSlug)
+			version, err := client.Packs.GetVersion(packId, versionId)
 			if err != nil {
 				return err
 			}

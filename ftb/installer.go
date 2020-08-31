@@ -14,10 +14,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/jamiemansfield/go-ftbmeta/ftbmeta"
+	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
@@ -40,7 +41,7 @@ var (
 
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
-func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *ftbmeta.Pack, version *ftbmeta.Version) error {
+func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *modpacksch.Pack, version *modpacksch.Version) error {
 	fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
 
 	destination, err := filepath.Abs(dest)
@@ -57,20 +58,20 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 	if readJson(filepath.Join(destination, DataDir, SettingsFile), &settings) != nil {
 		settings = &InstallSettings{
 			ID:      uuid.New().String(),
-			Pack:    pack.Slug,
-			Version: version.Slug,
+			Pack:    pack.ID,
+			Version: version.ID,
 			Target:  installTarget,
 			Files:   map[string]string{},
 		}
 	} else {
-		fmt.Println("Existing installation of " + settings.Pack + " v" + settings.Version + " detected")
+		fmt.Println("Existing installation of " + strconv.Itoa(settings.Pack) + " v" + strconv.Itoa(settings.Version) + " detected")
 
-		if pack.Slug != settings.Pack {
+		if pack.ID != settings.Pack {
 			return OtherPackAlreadyInstalled
 		}
 	}
 	install := &Install{
-		Version:       version.Slug,
+		Version:       version.ID,
 		OriginalFiles: settings.Files,
 		NewFiles:      map[string]string{},
 	}
@@ -179,7 +180,7 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 		}
 
 		// Add icon to pack
-		icon, err := launcher.CreateIconFromURL(pack.Art["square"].URL)
+		icon, err := launcher.CreateIconFromURL(pack.GetIcon().URL)
 		if err != nil {
 			fmt.Printf("Failed to get pack icon: %e", err)
 		} else {
@@ -220,7 +221,7 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 }
 
 type Install struct {
-	Version       string
+	Version       int
 	OriginalFiles map[string]string
 	NewFiles      map[string]string
 }
@@ -228,8 +229,8 @@ type Install struct {
 // ftbinstall.json
 type InstallSettings struct {
 	ID      string                  `json:"id"`
-	Pack    string                  `json:"pack"`
-	Version string                  `json:"version"`
+	Pack    int                     `json:"pack"`
+	Version int                     `json:"version"`
 	Target  minecraft.InstallTarget `json:"target"`
 	Files   map[string]string       `json:"files"`
 }

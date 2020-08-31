@@ -6,11 +6,10 @@ services (currently modpacks.ch and the Technic Platform), written in Go.
 
 ## ftbinstall
 
-ftbinstall is a CLI to expose the FTB installer, it uses the Neptune FTB
-Meta Service.
+ftbinstall is a CLI to expose the FTB installer.
 
 ```
-ftbinstall [-target {client|server}] pack-slug version
+ftbinstall [-target {client|server}] pack version
 ```
 
 ## technicinstall
