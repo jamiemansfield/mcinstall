@@ -21,7 +21,7 @@ import (
 
 // Installs the given files, for the target environment, to the given
 // destination.
-func InstallFiles(install *Install, target minecraft.InstallTarget, dest string, files []*modpacksch.File) error {
+func (i *Installer) InstallFiles(install *Install, target minecraft.InstallTarget, dest string, files []*modpacksch.File) error {
 	// Collect the target-specific files, so we can keep an accurate count
 	// of how many files we've installed.
 	var targetFiles []*modpacksch.File
@@ -34,14 +34,14 @@ func InstallFiles(install *Install, target minecraft.InstallTarget, dest string,
 	}
 
 	// Install files for the target
-	for i, file := range targetFiles {
-		msg, err := installFile(install, dest, file)
+	for j, file := range targetFiles {
+		msg, err := i.installFile(install, dest, file)
 		if err != nil {
-			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", i+1, len(targetFiles), file.Path, file.Name)
+			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", j+1, len(targetFiles), file.Path, file.Name)
 			fmt.Println(err)
 			continue
 		}
-		fmt.Printf("[%d / %d] %s\n", i+1, len(targetFiles), msg)
+		fmt.Printf("[%d / %d] %s\n", j+1, len(targetFiles), msg)
 
 		// Log the files information in the install settings
 		install.NewFiles[file.Path+file.Name] = file.Sha1
@@ -51,7 +51,7 @@ func InstallFiles(install *Install, target minecraft.InstallTarget, dest string,
 }
 
 // Installs the given file, to the destination
-func installFile(install *Install, dest string, file *modpacksch.File) (string, error) {
+func (i *Installer) installFile(install *Install, dest string, file *modpacksch.File) (string, error) {
 	dirPath := filepath.Join(dest, filepath.FromSlash(file.Path))
 	fileDest := filepath.Join(dirPath, file.Name)
 
@@ -80,11 +80,11 @@ func installFile(install *Install, dest string, file *modpacksch.File) (string, 
 			fmt.Println("************************************************************************************************")
 			fmt.Printf("%s%s has a sha1 has of '%s', when\n", file.Path, file.Name, hash)
 			fmt.Printf("'%s' was expected.\n", originalHash)
-			fmt.Printf("To prevent overriding configurations, it will be installed under %s/%s.\n", DataDir, install.Version)
+			fmt.Printf("To prevent overriding configurations, it will be installed under %s/%d.\n", i.DataDir, install.Version)
 			fmt.Println("Please investigate any collisions before playing!")
 			fmt.Println("************************************************************************************************")
 
-			return installFile(install, filepath.Join(dest, DataDir, strconv.Itoa(install.Version)), file)
+			return i.installFile(install, filepath.Join(dest, i.DataDir, strconv.Itoa(install.Version)), file)
 		}
 	}
 

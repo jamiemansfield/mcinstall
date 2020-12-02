@@ -19,29 +19,61 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jamiemansfield/go-modpacksch/modpacksch"
+	"github.com/jamiemansfield/mcinstall/forge"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
 
 const (
-	DataDir      = ".ftbinstall"
-	SettingsFile = "install.json"
-)
+	defaultDataDir = ".ftbinstall"
 
-var (
-	ExcludedDirs = []string{
-		DataDir,
-		"saves",
-	}
+	settingsFile = "install.json"
 )
 
 var (
 	OtherPackAlreadyInstalled = errors.New("ftb: a pack is already installed at this location")
 )
 
+type Installer struct {
+	// The directory to store mcinstall-related files (settings.json, etc)
+	DataDir string
+
+	// Directories that shouldn't be touched, in any capacity, when updating
+	// modpacks.
+	ExcludedDirs []string
+
+	// The Minecraft Forge installer to use, should it be needed
+	ForgeInstaller *forge.Installer
+}
+
+func NewInstaller() *Installer {
+	return &Installer{
+		DataDir: defaultDataDir,
+		ExcludedDirs: []string{
+			"saves",
+		},
+		ForgeInstaller: forge.NewInstaller(),
+	}
+}
+
+// IsExcludedDir determines whether a directory should be excluded from being
+// changed as the result of any update logic.
+func (i *Installer) IsExcludedDir(relPath string) bool {
+	parts := strings.Split(relPath, string(filepath.Separator))
+
+	excludedDirs := append(i.ExcludedDirs, i.DataDir)
+	for _, excludedDir := range excludedDirs {
+		if parts[0] == excludedDir {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
-func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *modpacksch.Pack, version *modpacksch.Version) error {
+func (i *Installer) InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *modpacksch.Pack, version *modpacksch.Version) error {
 	fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
 
 	destination, err := filepath.Abs(dest)
@@ -50,12 +82,12 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 	}
 
 	// Find existing install (or create one)
-	if err := os.MkdirAll(DataDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(i.DataDir, os.ModePerm); err != nil {
 		return err
 	}
 
 	var settings *InstallSettings
-	if readJson(filepath.Join(destination, DataDir, SettingsFile), &settings) != nil {
+	if readJson(filepath.Join(destination, i.DataDir, settingsFile), &settings) != nil {
 		settings = &InstallSettings{
 			ID:      uuid.New().String(),
 			Pack:    pack.ID,
@@ -76,12 +108,10 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 		NewFiles:      map[string]string{},
 	}
 
-	err = InstallTargets(installTarget, destination, version.Targets)
-	if err != nil {
+	if err := i.InstallTargets(installTarget, destination, version.Targets); err != nil {
 		return err
 	}
-	err = InstallFiles(install, installTarget, destination, version.Files)
-	if err != nil {
+	if err := i.InstallFiles(install, installTarget, destination, version.Files); err != nil {
 		return err
 	}
 
@@ -102,11 +132,8 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 
 		// While this should never be an issue anyway - for peace of mind,
 		// ftbinstall will not delete ANYTHING from a protected directory.
-		parts := strings.Split(relPath, string(filepath.Separator))
-		for _, excludedDir := range ExcludedDirs {
-			if parts[0] == excludedDir {
-				return nil
-			}
+		if i.IsExcludedDir(relPath) {
+			return nil
 		}
 
 		// Ignore if its a current file
@@ -139,7 +166,7 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 			fmt.Printf("%s has been removed from the modpack, as its\n", ftbPath)
 			fmt.Println("sha1 hash doesn't match the original - we have left it in place.")
 			fmt.Println("Please investigate whether you still need the file before playing!")
-			fmt.Printf("You can remove the '%s' line from %s/%s if\n", ftbPath, DataDir, SettingsFile)
+			fmt.Printf("You can remove the '%s' line from %s/%s if\n", ftbPath, i.DataDir, settingsFile)
 			fmt.Println("still required")
 
 			// So that this message continues on, store the original hash in the new file list
@@ -217,7 +244,7 @@ func InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack
 	// Write install settings
 	settings.Version = install.Version
 	settings.Files = install.NewFiles
-	return writeJson(filepath.Join(destination, DataDir, SettingsFile), &settings)
+	return writeJson(filepath.Join(destination, i.DataDir, settingsFile), &settings)
 }
 
 type Install struct {

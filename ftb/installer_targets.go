@@ -8,7 +8,6 @@ import (
 	"errors"
 
 	"github.com/jamiemansfield/go-modpacksch/modpacksch"
-	"github.com/jamiemansfield/mcinstall/forge"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
@@ -19,7 +18,7 @@ var (
 
 // Installs the given targets, for the target environment, to the given
 // destination.
-func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets []*modpacksch.Target) error {
+func (i *Installer) InstallTargets(installTarget minecraft.InstallTarget, dest string, targets []*modpacksch.Target) error {
 	// Get the target Minecraft version for the pack
 	var mcVersion *minecraft.Version
 	for _, target := range targets {
@@ -53,8 +52,7 @@ func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets 
 
 			// Minecraft Forge
 			if target.Name == "forge" {
-				forgeInstaller := forge.NewInstaller()
-				if err := forgeInstaller.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
+				if err := i.ForgeInstaller.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
 					return err
 				}
 			}

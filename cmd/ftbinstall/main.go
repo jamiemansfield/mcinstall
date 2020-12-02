@@ -68,7 +68,8 @@ func main() {
 				return err
 			}
 
-			return ftb.InstallPackVersion(installTarget, "", pack, version)
+			ftbInstaller := ftb.NewInstaller()
+			return ftbInstaller.InstallPackVersion(installTarget, "", pack, version)
 		},
 	}
 
