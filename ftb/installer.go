@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gammazero/workerpool"
 	"github.com/google/uuid"
 	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/forge"
@@ -44,15 +45,18 @@ type Installer struct {
 
 	// The Minecraft Forge installer to use, should it be needed
 	ForgeInstaller *forge.Installer
+
+	workerPool *workerpool.WorkerPool
 }
 
-func NewInstaller() *Installer {
+func NewInstaller(maxWorkers int) *Installer {
 	return &Installer{
 		DataDir: defaultDataDir,
 		ExcludedDirs: []string{
 			"saves",
 		},
 		ForgeInstaller: forge.NewInstaller(),
+		workerPool: workerpool.New(maxWorkers),
 	}
 }
 

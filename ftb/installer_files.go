@@ -35,17 +35,24 @@ func (i *Installer) InstallFiles(install *Install, target minecraft.InstallTarge
 
 	// Install files for the target
 	for j, file := range targetFiles {
-		msg, err := i.installFile(install, dest, file)
-		if err != nil {
-			fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", j+1, len(targetFiles), file.Path, file.Name)
-			fmt.Println(err)
-			continue
-		}
-		fmt.Printf("[%d / %d] %s\n", j+1, len(targetFiles), msg)
+		j := j
+		file := file
+
+		i.workerPool.Submit(func() {
+			msg, err := i.installFile(install, dest, file)
+			if err != nil {
+				fmt.Printf("[%d / %d] Failed to install '%s%s', ignoring file...\n", j+1, len(targetFiles), file.Path, file.Name)
+				fmt.Println(err)
+				return
+			}
+			fmt.Printf("[%d / %d] %s\n", j+1, len(targetFiles), msg)
+		})
 
 		// Log the files information in the install settings
 		install.NewFiles[file.Path+file.Name] = file.Sha1
 	}
+
+	i.workerPool.StopWait()
 
 	return nil
 }

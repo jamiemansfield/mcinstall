@@ -6,9 +6,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/ftb"
@@ -68,8 +70,15 @@ func main() {
 				return err
 			}
 
-			ftbInstaller := ftb.NewInstaller()
-			return ftbInstaller.InstallPackVersion(installTarget, "", pack, version)
+			start := time.Now()
+
+			ftbInstaller := ftb.NewInstaller(10)
+			result :=  ftbInstaller.InstallPackVersion(installTarget, "", pack, version)
+
+			elapsed := time.Since(start)
+			fmt.Printf("Installation took %s", elapsed)
+
+			return result
 		},
 	}
 
