@@ -53,7 +53,8 @@ func InstallTargets(installTarget minecraft.InstallTarget, dest string, targets 
 
 			// Minecraft Forge
 			if target.Name == "forge" {
-				if err := forge.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
+				forgeInstaller := forge.NewInstaller()
+				if err := forgeInstaller.InstallForge(installTarget, loaderDest, mcVersion, target.Version); err != nil {
 					return err
 				}
 			}

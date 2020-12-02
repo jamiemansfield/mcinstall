@@ -6,6 +6,7 @@ package forge
 
 import (
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/jamiemansfield/mcinstall/minecraft"
@@ -13,22 +14,36 @@ import (
 )
 
 const (
-	// The URL to Minecraft Forge's Maven, or a mirror.
-	MavenRoot = "https://files.minecraftforge.net/maven/"
+	defaultMavenRoot = "https://files.minecraftforge.net/maven/"
 )
+
+type Installer struct {
+	// The URL to Minecraft Forge's Maven, or a mirror.
+	MavenRoot *url.URL
+}
+
+// NewInstaller returns a new Installer to use for installing Minecraft
+// Forge.
+func NewInstaller() *Installer {
+	mavenRoot, _ := url.Parse(defaultMavenRoot)
+
+	return &Installer{
+		MavenRoot: mavenRoot,
+	}
+}
 
 // Installs Minecraft Forge to the given destination, for the given target.
 // If the target is Server, the destination will be the root directory of
 // the server; if the target is Client, the destination will be the
 // launcher's root directory.
-func InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
+func (i *Installer) InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
 	// Use modern installer - Minecraft 1.13 and above
 	if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
-		return installModernForge(target, dest, mcVersion, forgeVersion)
+		return i.installModernForge(target, dest, mcVersion, forgeVersion)
 	} else
 	// Use universal install method - Minecraft 1.5 -> Minecraft 1.12
 	if mcVersion.Major >= 1 && mcVersion.Minor >= 5 && mcVersion.Minor <= 12 {
-		return installUniversalForge(target, dest, mcVersion, forgeVersion)
+		return i.installUniversalForge(target, dest, mcVersion, forgeVersion)
 	}
 	// todo: older
 
@@ -38,11 +53,14 @@ func InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecr
 // Downloads the Minecraft Forge installer for the given version (MC-Forge),
 // to a temporary file.
 // The temporary file should be removed after usage.
-func downloadForgeInstaller(version string) (*os.File, error) {
-	url := MavenRoot + "net/minecraftforge/forge/" + version + "/forge-" + version + "-installer.jar"
+func (i *Installer) downloadForgeInstaller(version string) (*os.File, error) {
+	u, err := i.MavenRoot.Parse("net/minecraftforge/forge/" + version + "/forge-" + version + "-installer.jar")
+	if err != nil {
+		return nil, err
+	}
 
 	// Download installer
-	req, err := util.NewRequest(http.MethodGet, url, nil)
+	req, err := util.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
