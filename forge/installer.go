@@ -37,8 +37,13 @@ func NewInstaller() *Installer {
 // the server; if the target is Client, the destination will be the
 // launcher's root directory.
 func (i *Installer) InstallForge(target minecraft.InstallTarget, dest string, mcVersion *minecraft.Version, forgeVersion string) error {
-	// Use modern installer - Minecraft 1.13 and above
-	if mcVersion.Major >= 1 && mcVersion.Minor >= 13 {
+	forgeVrsn, err := ParseVersion(forgeVersion)
+	if err != nil {
+		return err
+	}
+
+	// Use modern installer - Minecraft 1.13 and above / newer Minecraft 1.12 builds
+	if (mcVersion.Major >= 1 && mcVersion.Minor >= 13) || (mcVersion.Minor == 12 && forgeVrsn.Build >= 2851) {
 		return i.installModernForge(target, dest, mcVersion, forgeVersion)
 	} else
 	// Use universal install method - Minecraft 1.5 -> Minecraft 1.12
