@@ -7,7 +7,7 @@ package ftb
 import (
 	"errors"
 
-	"github.com/jamiemansfield/go-modpacksch/modpacksch"
+	"git.sr.ht/~jmansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
 )
@@ -41,8 +41,7 @@ func (i *Installer) InstallTargets(installTarget minecraft.InstallTarget, dest s
 	for _, target := range targets {
 		if target.Type == "game" {
 			continue
-		} else
-		if target.Type == "modloader" {
+		} else if target.Type == "modloader" {
 			var loaderDest string
 			if installTarget == minecraft.Client {
 				loaderDest = launcher.GetLauncherDir()

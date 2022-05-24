@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jamiemansfield/go-modpacksch/modpacksch"
+	"git.sr.ht/~jmansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/ftb"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/util"
@@ -50,8 +50,7 @@ func main() {
 			var installTarget minecraft.InstallTarget
 			if installTargetRaw == "client" || installTargetRaw == "c" {
 				installTarget = minecraft.Client
-			} else
-			if installTargetRaw == "server" || installTargetRaw == "s" {
+			} else if installTargetRaw == "server" || installTargetRaw == "s" {
 				installTarget = minecraft.Server
 			} else {
 				return errors.New("unknown install target " + installTargetRaw)
@@ -73,7 +72,7 @@ func main() {
 			start := time.Now()
 
 			ftbInstaller := ftb.NewInstaller(10)
-			result :=  ftbInstaller.InstallPackVersion(installTarget, "", pack, version)
+			result := ftbInstaller.InstallPackVersion(installTarget, "", pack, version)
 
 			elapsed := time.Since(start)
 			fmt.Printf("Installation took %s", elapsed)

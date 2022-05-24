@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/jamiemansfield/go-modpacksch/modpacksch"
+	"git.sr.ht/~jmansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/util"
 )

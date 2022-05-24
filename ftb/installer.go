@@ -17,9 +17,9 @@ import (
 	"strconv"
 	"strings"
 
+	"git.sr.ht/~jmansfield/go-modpacksch/modpacksch"
 	"github.com/gammazero/workerpool"
 	"github.com/google/uuid"
-	"github.com/jamiemansfield/go-modpacksch/modpacksch"
 	"github.com/jamiemansfield/mcinstall/forge"
 	"github.com/jamiemansfield/mcinstall/minecraft"
 	"github.com/jamiemansfield/mcinstall/minecraft/launcher"
@@ -56,7 +56,7 @@ func NewInstaller(maxWorkers int) *Installer {
 			"saves",
 		},
 		ForgeInstaller: forge.NewInstaller(),
-		workerPool: workerpool.New(maxWorkers),
+		workerPool:     workerpool.New(maxWorkers),
 	}
 }
 
@@ -77,7 +77,7 @@ func (i *Installer) IsExcludedDir(relPath string) bool {
 
 // Installs the given pack version to the destination, with the
 // appropriate files for that install target.
-func (i *Installer) InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *modpacksch.Pack, version *modpacksch.Version) error {
+func (i *Installer) InstallPackVersion(installTarget minecraft.InstallTarget, dest string, pack *modpacksch.Pack, version *modpacksch.PackVersion) error {
 	fmt.Println("Installing " + pack.Name + " v" + version.Name + "...")
 
 	destination, err := filepath.Abs(dest)
