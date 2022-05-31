@@ -31,6 +31,12 @@ func main() {
 				Usage:   "sets the install target",
 				Value:   "client",
 			},
+			&cli.StringFlag{
+				Name:    "userAgent",
+				Aliases: []string{"ua"},
+				Usage:   "the user-agent used for eequests",
+				Value:   util.UserAgent,
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			if ctx.Args().Len() < 2 {
@@ -46,6 +52,7 @@ func main() {
 				return errors.New("usage: version must be an integer")
 			}
 			installTargetRaw := ctx.Value("target").(string)
+			userAgent := ctx.Value("userAgent").(string)
 
 			var installTarget minecraft.InstallTarget
 			if installTargetRaw == "client" || installTargetRaw == "c" {
@@ -57,7 +64,7 @@ func main() {
 			}
 
 			client := modpacksch.NewClient(nil)
-			client.UserAgent = util.UserAgent
+			client.UserAgent = userAgent
 
 			pack, err := client.Packs.GetPack(packId)
 			if err != nil {
